@@ -1,6 +1,6 @@
 # OS1 - Local Conversational AI
 
-This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-speech interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads (which is then cached for future use).
+This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-text interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads (which is then cached for future use).
 
 It was a tough challenge trying to get a small 1B model to work in such a usable way without it hallucinating too much, but giving it guided prompts and a memory bank helped tremedously. **Still, this model is subject to saying nonsense at times and is far from perfect.**
 
@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
 
 ## Features
 
-*   **Speech-to-Speech Conversation:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model, which accepts both audio and text input. This lets us do a direct conversational flow where your voice input is processed directly by the core LLM without converting speech into text (more pipelines, more latency).
+*   **Speech-to-text Conversation:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model, which accepts both audio and text input. This lets us do a direct conversational flow where your voice input is processed directly by the core LLM without converting speech into text (more pipelines, more latency).
 *   **Parallel Transcription (for Display/Memory):** While your voice directly drives the LLM, the whisper-base model runs in parallel to transcribe your speech. This transcription is used for:
     *   Displaying your words on the screen for visual feedback.
     *   Storing the text representation of what you said to the LLM in the vector storage. 

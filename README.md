@@ -91,6 +91,6 @@ This project is essentially an amalgamation of the hard work put in by these peo
 
 *   **Xenova** For their work on Transformers.js, and reference to their LLM worker code in [transformers.js-examples](https://github.com/huggingface/transformers.js-examples)
 
-*   **Spike Jonze and the creators of the movie 'Her':** For the original inspiration.
+*   **Spike Jonze and the creators of the movie 'Her':** For the original inspiration. A very bleak movie to watch 12 years later lmao.
 
 

@@ -1,6 +1,6 @@
 # OS1 - Local Conversational AI
 
-This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-speech interaction. All the while trying to keep it lightweight.
+This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-speech interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads.
 
 ## Demo: Testing OS1's ability to remember my name
 

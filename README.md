@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
     *   **Speech-to-Text (For Display/Memory):** [onnx-community/whisper-base](https://huggingface.co/onnx-community/whisper-base)
     *   **Text-to-Speech:** [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)
     *   **Embeddings (Memory):** [sentence-transformers/all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
-*   **Memory:** In-browser Vector Storage using cosine similarity search stored in IndexedDB named "Brain".
+*   **Memory:** In-browser vector storage using basic cosine similarity search 
 
 
 

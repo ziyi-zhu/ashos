@@ -26,7 +26,7 @@ let isInterrupted = false; // Flag for interrupt signal
 // Listen for messages from the main thread
 self.addEventListener("message", async (e: MessageEvent) => {
   // Add this log to see the actual device value during processing
-  console.log(`TTS Worker: Received message type ${e.data?.type || '(data object)'}. Current device: ${device}`);
+  //console.log(`TTS Worker: Received message type ${e.data?.type || '(data object)'}. Current device: ${device}`);
 
   // Handle command messages first
   if (e.data.type) {
@@ -35,7 +35,7 @@ self.addEventListener("message", async (e: MessageEvent) => {
         // Already handled during initialization
         return;
       case 'interrupt':
-        console.log("TTS Worker received interrupt signal.");
+        //console.log("TTS Worker received interrupt signal.");
         isInterrupted = true; // Set the interrupt flag
         // If currently processing, the loop check should catch this.
         // We don't forcefully kill the session here, rely on the flag.
@@ -72,7 +72,7 @@ self.addEventListener("message", async (e: MessageEvent) => {
       for await (const { text, audio } of stream) {
         // Check interrupt flag within the loop
         if (isInterrupted) {
-          console.log("TTS Worker: Interrupt detected, stopping stream processing.");
+          //console.log("TTS Worker: Interrupt detected, stopping stream processing.");
           break; // Exit the loop
         }
         self.postMessage({

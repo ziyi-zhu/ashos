@@ -27,12 +27,12 @@ function openDB(): Promise<IDBDatabase> {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
         // maybe: Index for potentially filtering/sorting by timestamp later
         store.createIndex('timestamp', 'timestamp', { unique: false });
-        console.log(`Object store '${STORE_NAME}' created.`);
+        //console.log(`Object store '${STORE_NAME}' created.`);
       }
     };
 
     request.onsuccess = (event) => {
-      console.log(`Database '${DB_NAME}' opened successfully.`);
+      //console.log(`Database '${DB_NAME}' opened successfully.`);
       resolve((event.target as IDBOpenDBRequest).result);
     };
 

@@ -26,12 +26,12 @@ export const convertBlobToAudio = async (blob: Blob): Promise<Float32Array | nul
     }
 
     const audioBuffer = await tempCtx.decodeAudioData(arrayBuffer);
-    console.log("Audio decoded:", {
-      duration: audioBuffer.duration,
-      sampleRate: audioBuffer.sampleRate,
-      numberOfChannels: audioBuffer.numberOfChannels,
-      length: audioBuffer.length
-    });
+    // console.log("Audio decoded:", {
+    //   duration: audioBuffer.duration,
+    //   sampleRate: audioBuffer.sampleRate,
+    //   numberOfChannels: audioBuffer.numberOfChannels,
+    //   length: audioBuffer.length
+    // });
 
     // Cleanup
     URL.revokeObjectURL(url);
@@ -44,15 +44,15 @@ export const convertBlobToAudio = async (blob: Blob): Promise<Float32Array | nul
     const maxSamplesAtOriginalRate = MAX_AUDIO_LENGTH * audioBuffer.sampleRate;
 
     if (originalAudio.length > maxSamplesAtOriginalRate) {
-      console.log(`Audio too long (${audioBuffer.duration}s), using only the last ${MAX_AUDIO_LENGTH}s`);
+      //console.log(`Audio too long (${audioBuffer.duration}s), using only the last ${MAX_AUDIO_LENGTH}s`);
       audioToProcess = originalAudio.slice(-maxSamplesAtOriginalRate);
     }
 
     if (audioBuffer.sampleRate === WHISPER_SAMPLING_RATE) {
-      console.log("Sample rates match, using audio data directly");
+      //console.log("Sample rates match, using audio data directly");
       return audioToProcess;
     }
-    console.log(`Resampling audio from ${audioBuffer.sampleRate}Hz to ${WHISPER_SAMPLING_RATE}Hz`);
+    //console.log(`Resampling audio from ${audioBuffer.sampleRate}Hz to ${WHISPER_SAMPLING_RATE}Hz`);
 
     const offlineCtx = new OfflineAudioContext(
       1, // mono
@@ -85,7 +85,7 @@ export const convertBlobToAudio = async (blob: Blob): Promise<Float32Array | nul
 
     return resampledBuffer.getChannelData(0);
   } catch (err) {
-    console.error("Error converting blob to audio:", err);
+    //console.error("Error converting blob to audio:", err);
     return null;
   }
 };

@@ -75,7 +75,7 @@ export function useWhisperRecorder({
 
   // --- Whisper Worker Init & Handling ---
   useEffect(() => {
-    console.log("Initializing Whisper Worker...");
+    //console.log("Initializing Whisper Worker...");
     whisperWorker.current = new Worker(new URL('../whisper-worker.js', import.meta.url), {
         type: 'module',
     });
@@ -89,12 +89,12 @@ export function useWhisperRecorder({
                 setTranscriptionReady(false);
                 break;
             case 'ready':
-                console.log("Whisper Worker Ready");
+                //console.log("Whisper Worker Ready");
                 setTranscriptionReady(true);
                 setError(null); 
                 break;
             case 'error':
-                console.error("Whisper Worker Error:", data);
+                //console.error("Whisper Worker Error:", data);
                 setError(data || 'Error loading Whisper model');
                 setTranscriptionReady(false);
                 setIsTranscribing(false); 
@@ -106,7 +106,7 @@ export function useWhisperRecorder({
                 if (tps) console.log(`Whisper processing at ${tps.toFixed(2)} tokens/sec`);
                 break;
             case 'complete':
-                console.log('Whisper transcription complete:', output);
+                //console.log('Whisper transcription complete:', output);
                 setIsTranscribing(false);
 
                 if (output && Array.isArray(output) && output.length > 0) {
@@ -123,22 +123,31 @@ export function useWhisperRecorder({
                         if (transcribedText === lastEmittedTranscriptionRef.current &&
                             now - lastEmitTimeRef.current < DEBOUNCE_INTERVAL_MS)
                         {
-                            console.log(`Debouncing duplicate transcription: \"${transcribedText}\\"`);
+                            //console.log(`Debouncing duplicate transcription: \"${transcribedText}\\"`);
                         } else {
-                            console.log(`Emitting transcription update: \"${transcribedText}\\"`);
+                            //console.log(`Emitting transcription update: \"${transcribedText}\\"`);
                             lastEmittedTranscriptionRef.current = transcribedText; // Store this emitted text
                             lastEmitTimeRef.current = now;
                             onTranscriptionUpdate(transcribedText); 
                         }
 
                     } else {
-                        console.log("Transcription filtered (silence/blank).");
+                        //console.log("Transcription filtered (silence/blank).");
                         lastEmittedTranscriptionRef.current = null;
                     }
                 } else {
-                   console.log("Transcription output empty or invalid.");
+                   //console.log("Transcription output empty or invalid.");
                    lastEmittedTranscriptionRef.current = null;
                 }
+                break;
+            case 'initiate':
+            case 'download':
+            case 'progress':
+            case 'done':
+                // These are detailed loading statuses from Transformers.js
+                // We can log them or update a detailed progress state if needed.
+                // For now, just acknowledging them prevents the "Unknown status" warning.
+                 // console.log("Whisper Loading Status:", status, data); // Optional: uncomment for debugging
                 break;
             default:
                 console.warn("Unknown Whisper worker message status:", status);
@@ -151,7 +160,7 @@ export function useWhisperRecorder({
 
     // Cleanup
     return () => {
-        console.log("Terminating Whisper Worker...");
+        ////console.log("Terminating Whisper Worker...");
         whisperWorker.current?.terminate();
         whisperWorker.current?.removeEventListener('message', handleWhisperMessage);
         setIsTranscribing(false);
@@ -170,7 +179,7 @@ export function useWhisperRecorder({
     let audioContextInstance: AudioContext | null = null;
     let recorderInstance: MediaRecorder | null = null;
 
-    console.log("Initializing microphone access...");
+    //console.log("Initializing microphone access...");
     navigator.mediaDevices.getUserMedia({
         audio: {
             echoCancellation: true,
@@ -185,13 +194,13 @@ export function useWhisperRecorder({
 
         audioContextInstance = new AudioContext({ sampleRate: WHISPER_SAMPLING_RATE });
         audioContextRef.current = audioContextInstance;
-        console.log("AudioContext initialized with sample rate:", audioContextInstance.sampleRate);
+        //console.log("AudioContext initialized with sample rate:", audioContextInstance.sampleRate);
 
         const mimeTypes = [
           'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'
         ];
         let selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'audio/webm';
-        console.log("Creating MediaRecorder with MIME type:", selectedMimeType);
+        //console.log("Creating MediaRecorder with MIME type:", selectedMimeType);
 
         recorderInstance = new MediaRecorder(stream, { mimeType: selectedMimeType });
         recorderRef.current = recorderInstance;
@@ -200,13 +209,13 @@ export function useWhisperRecorder({
           audioChunksRef.current = [];
           recordingStartTimeRef.current = Date.now();
           lastProcessingTimeRef.current = Date.now();
-          console.log("Internal: Recording started with", recorderInstance?.mimeType);
+          //console.log("Internal: Recording started with", recorderInstance?.mimeType);
         };
 
         recorderInstance.ondataavailable = (e) => {
           if (e.data.size > 0) {
             audioChunksRef.current.push(e.data);
-            // console.log("Audio chunk received, size:", e.data.size); // Verbose
+            // //console.log("Audio chunk received, size:", e.data.size); // Verbose
           } else {
             console.warn("Received empty audio chunk");
           }
@@ -217,14 +226,14 @@ export function useWhisperRecorder({
           const isMidRefresh = isRefreshingRef.current;
 
           if (!wasRefresh && !isMidRefresh) {
-              console.log("Internal: Recording stopped by stopRecording()");
+              //console.log("Internal: Recording stopped by stopRecording()");
           } else if (isMidRefresh) {
-              console.log("Internal: Recorder stopped for refresh. Skipping final processing.");
+              //console.log("Internal: Recorder stopped for refresh. Skipping final processing.");
           } else {
               console.warn("Internal: Recorder stopped unexpectedly while isRecordingRef was true.");
           }
           if (!isMidRefresh && audioChunksRef.current.length > 0 && !isTranscribing) {
-              console.log("Processing final audio chunks after recorder stopped");
+              //console.log("Processing final audio chunks after recorder stopped");
               processLatestAudio(); // Process final chunks
           }
         };
@@ -238,7 +247,7 @@ export function useWhisperRecorder({
            }
         };
 
-        console.log("MediaRecorder initialized successfully");
+        //console.log("MediaRecorder initialized successfully");
         setError(null); 
 
     })
@@ -250,7 +259,7 @@ export function useWhisperRecorder({
 
     // Cleanup function
     return () => {
-      console.log("Cleaning up microphone resources...");
+      //console.log("Cleaning up microphone resources...");
       stopPeriodicProcessing(); 
       clearRecorderRefresh(); 
 
@@ -299,12 +308,12 @@ export function useWhisperRecorder({
       finalAudioData = audioData; 
 
       if (!audioData) {
-        console.error("Failed to convert audio blob - potentially corrupted data.");
+        //console.error("Failed to convert audio blob - potentially corrupted data.");
         setIsTranscribing(false);
         audioChunksRef.current = []; 
         resetSilenceTimer();
         if (isRecordingRef.current) {
-            console.log("Scheduling immediate recorder refresh due to audio conversion failure");
+            //console.log("Scheduling immediate recorder refresh due to audio conversion failure");
             refreshRecorder();
         }
         return;
@@ -424,7 +433,7 @@ export function useWhisperRecorder({
   const scheduleRecorderRefresh = useCallback(() => {
     clearRecorderRefresh();
     recorderRefreshTimeoutRef.current = window.setTimeout(() => {
-      console.log("Refreshing recorder (scheduled timeout)");
+      //console.log("Refreshing recorder (scheduled timeout)");
       refreshRecorder();
     }, RECORDER_REFRESH_INTERVAL);
   }, [clearRecorderRefresh]); 
@@ -434,7 +443,7 @@ export function useWhisperRecorder({
       return;
     }
 
-    console.log("Attempting recorder refresh...");
+    //console.log("Attempting recorder refresh...");
     isRefreshingRef.current = true; // Set flag immediately
 
     // ** do NOT process audio here - rely on onstop check **
@@ -461,7 +470,7 @@ export function useWhisperRecorder({
       if (isRecordingRef.current && recorderRef.current) {
         try {
             if (recorderRef.current.state === 'inactive') {
-                console.log("Restarting recorder after refresh timeout");
+                //console.log("Restarting recorder after refresh timeout");
                 audioChunksRef.current = []; 
                 recorderRef.current.start(500); 
                 scheduleRecorderRefresh();
@@ -497,7 +506,7 @@ export function useWhisperRecorder({
       console.warn("Cannot start recording:", { hasRecorder: !!recorderRef.current, transcriptionReady, isRecording: isRecordingRef.current });
       return;
     }
-    console.log("Hook: startRecording called");
+    //console.log("Hook: startRecording called");
     try {
       audioChunksRef.current = []; 
       resetSilenceTimer();
@@ -520,7 +529,7 @@ export function useWhisperRecorder({
          
          return;
      }
-     console.log("Hook: stopRecordingInternal called");
+     //console.log("Hook: stopRecordingInternal called");
      clearRecorderRefresh(); 
      resetSilenceTimer();
      hasTranscribedSpeechRef.current = false; 
@@ -532,7 +541,7 @@ export function useWhisperRecorder({
              console.warn("Stop called but recorder wasn't recording, state:", recorderRef.current.state);
 
              if (isManualStop && audioChunksRef.current.length > 0 && !isTranscribing) {
-                 console.log("Processing final chunks on manual stop.");
+                 //console.log("Processing final chunks on manual stop.");
 
                  processLatestAudio(); 
              }

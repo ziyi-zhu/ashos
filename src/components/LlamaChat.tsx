@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Mic, MicOff} from "lucide-react";
-import { addMemory, preloadEmbeddingModel, findSimilarMemories, MemorySearchResult } from "@/lib/memory";
+import { addMemory, preloadEmbeddingModel } from "@/lib/memory"; //findSimilarMemories, //MemorySearchResult 
 import { toast } from "sonner";
 import { buildLlamaContext } from "@/lib/contextBuilder";
 import type { Voices, Message, TTSRequest } from "@/types/chat";
@@ -71,35 +71,35 @@ export function LlamaChat() {
     return () => { document.body.classList.remove('os1-theme'); };
   }, []);
 
-  // --- Debug function to query memory from console ---
-  useEffect(() => {
-    if (import.meta.env.DEV) { // Only run in development mode
-      const queryMemory = async (query: string, topK: number = 5) => {
-        console.log(`Querying memory with: "${query}", topK: ${topK}`);
-        try {
-          const results: MemorySearchResult[] = await findSimilarMemories(query, topK);
-          console.log("Memory search results:", results);
-          if (results.length === 0) {
-            console.log("No similar memories found.");
-          }
-        } catch (error) {
-          console.error("Error querying memory:", error);
-        }
-      };
+  // // --- Debug function to query memory from console ---
+  // useEffect(() => {
+  //   if (import.meta.env.DEV) { // Only run in development mode
+  //     const queryMemory = async (query: string, topK: number = 5) => {
+  //       //console.log(`Querying memory with: "${query}", topK: ${topK}`);
+  //       try {
+  //         const results: MemorySearchResult[] = await findSimilarMemories(query, topK);
+  //         console.log("Memory search results:", results);
+  //         if (results.length === 0) {
+  //           console.log("No similar memories found.");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error querying memory:", error);
+  //       }
+  //     };
 
-      // Attach to window object
-      (window as any).queryMemory = queryMemory;
-      console.log("Memory query function 'queryMemory(query, topK)' attached to window for debugging.");
+  //     // Attach to window object
+  //     (window as any).queryMemory = queryMemory;
+  //     console.log("Memory query function 'queryMemory(query, topK)' attached to window for debugging.");
 
-      // Cleanup function to remove from window when component unmounts
-    return () => {
-        if ((window as any).queryMemory === queryMemory) {
-          delete (window as any).queryMemory;
-          console.log("Removed queryMemory function from window.");
-        }
-      };
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
+  //     // Cleanup function to remove from window when component unmounts
+  //   return () => {
+  //       if ((window as any).queryMemory === queryMemory) {
+  //         delete (window as any).queryMemory;
+  //         //console.log("Removed queryMemory function from window.");
+  //       }
+  //     };
+  //   }
+  // }, []); // Empty dependency array ensures this runs only once on mount
 
   // --- End Debug function ---
 
@@ -107,8 +107,8 @@ export function LlamaChat() {
     try {
       return await buildLlamaContext(userInput);
     } catch (buildError) {
-      console.error("Error building Llama context:", buildError);
-      toast.error("Failed to process memories for context.");
+      //console.error("Error building Llama context:", buildError);
+      //toast.error("Failed to process memories for context.");
       return "";
     }
   }, []);
@@ -128,7 +128,7 @@ export function LlamaChat() {
 
 
   const interruptAndCleanup = useCallback(() => {
-    console.log("--- Running Interrupt and Cleanup --- ");
+    //console.log("--- Running Interrupt and Cleanup --- ");
     llamaWorker.current?.postMessage({ type: 'interrupt' });
     kokoroWorker.current?.postMessage({ type: 'interrupt' });
 
@@ -172,7 +172,7 @@ export function LlamaChat() {
     // --- End Sanitization ---
 
     // Use the sanitized text for logging and queuing
-    console.log(`Queueing TTS for: \"${sanitizedText.substring(0, 30)}...\"`);
+    //console.log(`Queueing TTS for: \"${sanitizedText.substring(0, 30)}...\"`);
     ttsQueue.current.push({ text: sanitizedText, voice: selectedVoice, speed });
     if (!isProcessingTTS.current) {
       processNextTTSRequest();
@@ -192,7 +192,7 @@ export function LlamaChat() {
     const request = ttsQueue.current[0];
     if (kokoroWorker.current) {
       ttsStartTimeRef.current = performance.now();
-      console.log(`TTS Start: Sending request for text: "${request.text.substring(0, 40)}..."`);
+      //console.log(`TTS Start: Sending request for text: "${request.text.substring(0, 40)}..."`);
       kokoroWorker.current.postMessage(request);
     } else {
       console.error("Kokoro worker not available when trying to process TTS queue");
@@ -206,20 +206,20 @@ export function LlamaChat() {
 
   const playNextChunk = useCallback(() => {
     if (audioChunkQueue.length === 0) {
-      console.log("PlayNextChunk: Queue empty, skipping.");
+      //console.log("PlayNextChunk: Queue empty, skipping.");
       return;
     }
     
     if (isAudioPlaying) {
-      console.log("PlayNextChunk: Audio already playing, waiting for current chunk to finish.");
+      //console.log("PlayNextChunk: Audio already playing, waiting for current chunk to finish.");
       return;
     }
     
     const nextChunk = audioChunkQueue[0];
-    console.log("PlayNextChunk: Preparing chunk, size:", nextChunk.size);
+    //console.log("PlayNextChunk: Preparing chunk, size:", nextChunk.size);
 
     if (currentAudioUrlRef.current) {
-      console.log("Revoking previous URL:", currentAudioUrlRef.current);
+      //console.log("Revoking previous URL:", currentAudioUrlRef.current);
       URL.revokeObjectURL(currentAudioUrlRef.current);
       currentAudioUrlRef.current = null;
     }
@@ -228,18 +228,18 @@ export function LlamaChat() {
     currentAudioUrlRef.current = url;
 
     if (!audioRef.current) {
-      console.log("Creating new Audio element");
+      //console.log("Creating new Audio element");
       audioRef.current = new Audio();
       
       audioRef.current.onended = () => {
-        console.log("Audio ended, setting isAudioPlaying to false");
+        //console.log("Audio ended, setting isAudioPlaying to false");
         setIsAudioPlaying(false);
       };
       
       audioRef.current.onerror = (e) => {
         console.error("Audio playback error:", e);
         if (currentAudioUrlRef.current === audioRef.current?.src) {
-          console.log("Revoking URL on error:", currentAudioUrlRef.current);
+          //console.log("Revoking URL on error:", currentAudioUrlRef.current);
           URL.revokeObjectURL(currentAudioUrlRef.current);
           currentAudioUrlRef.current = null;
         }
@@ -249,17 +249,17 @@ export function LlamaChat() {
 
     setAudioChunkQueue(prev => prev.slice(1));
 
-    console.log("Setting src and playing:", url);
+    //console.log("Setting src and playing:", url);
     audioRef.current.src = url;
     
     setIsAudioPlaying(true);
     
     audioRef.current.play().then(() => {
-      console.log("Playback started successfully for URL:", url);
+      //console.log("Playback started successfully for URL:", url);
     }).catch(err => {
       console.error(`Error starting audio playback for ${url}:`, err);
       if (currentAudioUrlRef.current === url) {
-        console.log("Revoking URL on play() error:", currentAudioUrlRef.current);
+        //console.log("Revoking URL on play() error:", currentAudioUrlRef.current);
         URL.revokeObjectURL(currentAudioUrlRef.current);
         currentAudioUrlRef.current = null;
       }
@@ -269,18 +269,18 @@ export function LlamaChat() {
 
   const generateWelcomeBackMessage = useCallback(async () => {
       if (isProcessingRef.current || status !== 'ready') {
-          console.log("generateWelcomeBackMessage: Skipping, already processing or not ready.");
+          //console.log("generateWelcomeBackMessage: Skipping, already processing or not ready.");
           return; 
       }
       
-      console.log("Generating welcome back message using context builder...");
+      //console.log("Generating welcome back message using context builder...");
       interruptAndCleanup(); 
 
       let systemPrompt = "";
       try {
           const triggerPhrase = "You are OS1. Briefly welcome the user back by knowing what is the user's name.";
           systemPrompt = await buildContextMemo(triggerPhrase); 
-          console.log("Context built for welcome message:", systemPrompt); 
+          //console.log("Context built for welcome message:", systemPrompt); 
           if (!systemPrompt) {
               console.warn("Context builder returned empty for welcome message, using fallback.");
               systemPrompt = "You are OS1. Briefly welcome the user back.";
@@ -296,7 +296,7 @@ export function LlamaChat() {
           isProcessingRef.current = true;
           hasAutoSpoken.current = true; 
 
-          console.log("Using system prompt for welcome message:", systemPrompt);
+          //console.log("Using system prompt for welcome message:", systemPrompt);
 
           const messagesForWorker: Message[] = [
               { role: 'system', content: systemPrompt },
@@ -307,7 +307,7 @@ export function LlamaChat() {
 
           setTimeout(() => { 
               if (llamaWorker.current) {
-                  console.log("Posting message type 'generate' to worker for welcome back message.");
+                  //console.log("Posting message type 'generate' to worker for welcome back message.");
                   llamaWorker.current.postMessage({
           type: 'generate',
           data: {
@@ -333,21 +333,21 @@ export function LlamaChat() {
         const textToSubmit = submittedText || inputRef.current;
         
         if (!textToSubmit.trim()) {
-          console.log("Not submitting: empty text (microtask)");
+          //console.log("Not submitting: empty text (microtask)");
       return;
     }
     
-        console.log("Submitting message (microtask):", textToSubmit);
+        //console.log("Submitting message (microtask):", textToSubmit);
         setInput("");
         setIsProcessing(true);
         isProcessingRef.current = true;
 
         const userInputText = textToSubmit.trim(); 
         latestUserSubmitRef.current = userInputText;
-        console.log(`LlamaChat: Storing for memory/submit ref (using text): "${latestUserSubmitRef.current}"`);
+        //console.log(`LlamaChat: Storing for memory/submit ref (using text): "${latestUserSubmitRef.current}"`);
 
         const audioDataForWorker = latestAudioDataRef.current;
-        console.log(`LlamaChat: Preparing worker message. Has audio data? ${!!audioDataForWorker}. Length: ${audioDataForWorker?.length ?? 'N/A'}`);
+        //console.log(`LlamaChat: Preparing worker message. Has audio data? ${!!audioDataForWorker}. Length: ${audioDataForWorker?.length ?? 'N/A'}`);
         latestAudioDataRef.current = null;
 
         let contextForLlama = "";
@@ -363,9 +363,9 @@ export function LlamaChat() {
         let workerMessageContent = userInputText;
         if (audioDataForWorker) {
           workerMessageContent = `<|audio|>`;
-          console.log(`LlamaChat: Worker message content set to <|audio|> for audio input.`);
+          //console.log(`LlamaChat: Worker message content set to <|audio|> for audio input.`);
       } else {
-          console.log(`LlamaChat: Worker message content set to text: "${userInputText.substring(0,30)}..."`);
+          //console.log(`LlamaChat: Worker message content set to text: "${userInputText.substring(0,30)}..."`);
         }
         const userMessageForWorker: Message = { role: "user", content: workerMessageContent };
         const userMessageForDisplay: Message = { role: "user", content: userInputText };
@@ -376,10 +376,10 @@ export function LlamaChat() {
         const fullHistory = [...messagesRef.current, userMessageForWorker];
         const SLIDING_WINDOW_SIZE = 10;
         let messagesForWorker = fullHistory.slice(-SLIDING_WINDOW_SIZE);
-        console.log(`LlamaChat: Sliced message history to last ${messagesForWorker.length} messages (max ${SLIDING_WINDOW_SIZE})`);
+        //console.log(`LlamaChat: Sliced message history to last ${messagesForWorker.length} messages (max ${SLIDING_WINDOW_SIZE})`);
 
         if (contextForLlama) {
-          console.log("Prepending system prompt with context for worker...");
+          //console.log("Prepending system prompt with context for worker...");
           messagesForWorker.unshift({ role: "system", content: contextForLlama });
         }
 
@@ -390,7 +390,7 @@ export function LlamaChat() {
               messages: messagesForWorker,
               audio: audioDataForWorker ? audioDataForWorker : null, 
             };
-            console.log(`LlamaChat: Posting message type '${messageType}' to worker. Payload includes audio? ${!!messagePayload.audio}. Context included: ${!!contextForLlama}`);
+            //console.log(`LlamaChat: Posting message type '${messageType}' to worker. Payload includes audio? ${!!messagePayload.audio}. Context included: ${!!contextForLlama}`);
             llamaWorker.current.postMessage({
               type: messageType,
               data: messagePayload
@@ -408,14 +408,14 @@ export function LlamaChat() {
 
   const handleTranscriptionUpdate = useCallback((text: string) => {
     if (text) {
-        console.log("LlamaChat received transcription update (replacing input):", text);
+        //console.log("LlamaChat received transcription update (replacing input):", text);
         setInput(text);
     }
   }, []); 
 
   const handleSilenceSubmit = useCallback((_text: string, audioData: Float32Array | null) => {
-    console.log("LlamaChat: Silence duration met, triggering submit.");
-    console.log(`LlamaChat: Storing audio data from silence callback, length: ${audioData?.length ?? 'null'}`);
+    //console.log("LlamaChat: Silence duration met, triggering submit.");
+    //console.log(`LlamaChat: Storing audio data from silence callback, length: ${audioData?.length ?? 'null'}`);
     latestAudioDataRef.current = audioData;
     handleSubmit(); 
   }, [handleSubmit]); 
@@ -521,10 +521,10 @@ export function LlamaChat() {
               const wordCount = userInput.split(/\s+/).filter(Boolean).length;
 
               if (wordCount < SHORT_INPUT_WORD_THRESHOLD) {
-                  console.log(`Input is short (${wordCount} words), storing directly.`);
+                  //console.log(`Input is short (${wordCount} words), storing directly.`);
                   // Store the short input directly without summarization
                   addMemory(userInput, 'user')
-                    .then(() => console.log("Short user input added to memory."))
+                    //.then(() => console.log("Short user input added to memory."))
                     .catch((memError: unknown) => { 
                         console.error("Failed to add short user input to memory:", memError);
                         toast.error("Failed to save short memory input.");
@@ -532,7 +532,7 @@ export function LlamaChat() {
               } else {
                  // --- Original Summarization Logic for Longer Inputs --- 
                  const textToSummarize = userInput; // Only use user input
-                 console.log(`Requesting summarization for user input (${wordCount} words):`, textToSummarize.substring(0, 100) + "...");
+                 //console.log(`Requesting summarization for user input (${wordCount} words):`, textToSummarize.substring(0, 100) + "...");
                  if (llamaWorker.current) {
                    llamaWorker.current.postMessage({
                      type: 'summarize',
@@ -546,10 +546,10 @@ export function LlamaChat() {
               }
               // --- End Modify --- 
             } else {
-               console.log("Skipping memory save due to denial phrase.");
+               //console.log("Skipping memory save due to denial phrase.");
             }
           } else {
-             console.log("Skipping memory save (no final text or user input).")
+             //console.log("Skipping memory save (no final text or user input).")
           }
 
           setTimeout(() => {
@@ -559,11 +559,11 @@ export function LlamaChat() {
           break;
 
         case "summarization_start":
-          console.log("Worker started summarization process...");
+          //console.log("Worker started summarization process...");
           break;
           
         case "summary_complete":
-          console.log("Received summary:", summary);
+          //console.log("Received summary:", summary);
           if (summary && typeof summary === 'string' && summary.trim()) {
             // Use requestIdleCallback or setTimeout for non-critical background task
              const saveMemory = () => {
@@ -642,12 +642,12 @@ export function LlamaChat() {
           break;
         case "complete":
           if (ttsStartTimeRef.current !== null) {
-            const endTime = performance.now();
-            const duration = endTime - ttsStartTimeRef.current;
-            console.log(`TTS Complete: Total generation finished in ${duration.toFixed(2)} ms`); // Clarified log
+            //const endTime = performance.now();
+            //const duration = endTime - ttsStartTimeRef.current;
+            //console.log(`TTS Complete: Total generation finished in ${duration.toFixed(2)} ms`); // Clarified log
             ttsStartTimeRef.current = null; 
           } else {
-             console.log("TTS Complete: Received complete message without a recorded start time.");
+             //console.log("TTS Complete: Received complete message without a recorded start time.");
           }
 
           ttsQueue.current.shift();
@@ -674,7 +674,7 @@ export function LlamaChat() {
     return () => {
       isLoading = false; 
       clearInterval(loadingInterval);
-      console.log("Terminating Llama & Kokoro workers...");
+      //console.log("Terminating Llama & Kokoro workers...");
       llamaWorker.current?.terminate();
       kokoroWorker.current?.terminate();
       llamaWorker.current?.removeEventListener("message", handleLlamaMessage);
@@ -735,7 +735,7 @@ export function LlamaChat() {
       const visitedFlag = localStorage.getItem('os1_hasVisited');
 
       if (!visitedFlag) {
-        console.log("First visit detected, preparing predefined greeting.");
+        //console.log("First visit detected, preparing predefined greeting.");
         const greetingText = "Welcome! I'm OS1, your conversational companion. Everything we talk about, including memories of our chat, stays right here in your browser – nothing is sent to a server, and the AI runs entirely on your machine. To help me remember you next time, what should I call you? You can type your answer or click the microphone to speak.";
         localStorage.setItem('os1_hasVisited', 'true');
         const greetingMessage: Message = { role: 'assistant', content: greetingText };
@@ -743,7 +743,7 @@ export function LlamaChat() {
         speakText(greetingText);
         hasAutoSpoken.current = true;
       } else {
-        console.log("Return visit detected, triggering LLM for welcome back message.");
+        //console.log("Return visit detected, triggering LLM for welcome back message.");
         generateWelcomeBackMessage(); 
       }
     }
@@ -765,7 +765,7 @@ export function LlamaChat() {
 
   useEffect(() => {
     if (!isAudioPlaying && audioChunkQueue.length > 0) {
-      console.log("Effect: Triggering playNextChunk (Queue > 0, Not Playing)");
+      //console.log("Effect: Triggering playNextChunk (Queue > 0, Not Playing)");
       playNextChunk();
     }
   }, [isAudioPlaying, audioChunkQueue.length, playNextChunk]);

@@ -15,9 +15,9 @@ export interface MemorySearchResult {
 // generates the embedding to be used for the memory
 export async function addMemory(text: string, role: 'user' | 'assistant'): Promise<number> {
     try {
-        console.log(`Generating embedding for memory (${role}): "${text.substring(0, 50)}..."`);
+        //console.log(`Generating embedding for memory (${role}): "${text.substring(0, 50)}..."`);
         const embedding = await generateEmbedding(text);
-        console.log(`Embedding generated, size: ${embedding.length}`);
+        //console.log(`Embedding generated, size: ${embedding.length}`);
 
         const record: Omit<MemoryRecord, 'id'> = {
             role,
@@ -26,9 +26,9 @@ export async function addMemory(text: string, role: 'user' | 'assistant'): Promi
             timestamp: Date.now(),
         };
 
-        console.log("Adding record to IndexedDB...");
+        //console.log("Adding record to IndexedDB...");
         const id = await addRecord(record);
-        console.log(`Memory added successfully with ID: ${id}`);
+        //console.log(`Memory added successfully with ID: ${id}`);
         return id;
     } catch (error) {
         console.error("Failed to add memory:", error);
@@ -57,16 +57,16 @@ export async function findSimilarMemories(
     }
 
     try {
-        console.log(`Finding similar memories for query: "${queryText.substring(0, 50)}..." (Weights: Sim=${similarityWeight}, Rec=${recencyWeight})`);
+        //console.log(`Finding similar memories for query: "${queryText.substring(0, 50)}..." (Weights: Sim=${similarityWeight}, Rec=${recencyWeight})`);
         
-        console.log("Generating query embedding...");
+        //console.log("Generating query embedding...");
         const queryEmbedding = await generateEmbedding(queryText);
-        console.log(`Query embedding generated, size: ${queryEmbedding.length}`);
+        //console.log(`Query embedding generated, size: ${queryEmbedding.length}`);
 
         
-        console.log("Retrieving all memory records from IndexedDB...");
+        //console.log("Retrieving all memory records from IndexedDB...");
         const allRecords = await getAllRecords();
-        console.log(`Retrieved ${allRecords.length} records.`);
+        //console.log(`Retrieved ${allRecords.length} records.`);
 
         if (allRecords.length === 0) {
             return []; 
@@ -79,7 +79,7 @@ export async function findSimilarMemories(
         // --- End Recency Setup ---
 
         // 3. Calculate similarity, recency, and relevance for each record
-        console.log("Calculating relevance (similarity + recency)...");
+        //console.log("Calculating relevance (similarity + recency)...");
         const scoredResults: MemorySearchResult[] = allRecords.map(record => {
             const similarity = cosineSimilarity(queryEmbedding, record.embedding);
             
@@ -106,13 +106,13 @@ export async function findSimilarMemories(
 
         // 5. Return the top K results
         const results = scoredResults.slice(0, topK);
-        console.log(`Found ${results.length} most relevant memories (top ${topK}):`, results.map(r => ({ 
-            id: r.id, 
-            role: r.role, 
-            sim: r.similarity.toFixed(4), 
-            rec: r.recency?.toFixed(4), 
-            rel: r.relevance?.toFixed(4) 
-        }))); 
+        // console.log(`Found ${results.length} most relevant memories (top ${topK}):`, results.map(r => ({ 
+        //     id: r.id, 
+        //     role: r.role, 
+        //     sim: r.similarity.toFixed(4), 
+        //     rec: r.recency?.toFixed(4), 
+        //     rel: r.relevance?.toFixed(4) 
+        // }))); 
 
         return results;
     } catch (error) {

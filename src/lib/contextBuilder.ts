@@ -15,7 +15,7 @@ const denialPhrases = [
 export async function buildLlamaContext(userInput: string): Promise<string> {
     let contextForLlama = "";
     try {
-        console.log("Finding relevant memories based on current input..."); // Clarify log
+        //console.log("Finding relevant memories based on current input..."); // Clarify log
         const similarMemories: MemorySearchResult[] = await findSimilarMemories(userInput, TOP_K_MEMORIES);
         
         // --- Filter by Similarity Threshold --- 
@@ -25,13 +25,13 @@ export async function buildLlamaContext(userInput: string): Promise<string> {
                 // Use the correct property 'similarity' (which is already a number)
                 return mem.similarity >= MIN_SIMILARITY_THRESHOLD;
             });
-            console.log(`Filtered down to ${sufficientlySimilarMemories.length} memories after similarity threshold (${MIN_SIMILARITY_THRESHOLD}).`);
+            //console.log(`Filtered down to ${sufficientlySimilarMemories.length} memories after similarity threshold (${MIN_SIMILARITY_THRESHOLD}).`);
         }
         // --- End Similarity Filtering ---
 
         // Proceed with the memories that passed the similarity threshold
         if (sufficientlySimilarMemories.length > 0) {
-            console.log(`Found ${sufficientlySimilarMemories.length} relevant memories (passing threshold).`);
+            //console.log(`Found ${sufficientlySimilarMemories.length} relevant memories (passing threshold).`);
 
             // --- Filter out self-denying assistant memories ---
             const filteredMemories = sufficientlySimilarMemories.filter(mem => {
@@ -42,7 +42,7 @@ export async function buildLlamaContext(userInput: string): Promise<string> {
                 }
                 return true; // Keep all user memories
             });
-            console.log(`Filtered down to ${filteredMemories.length} memories after removing self-denials.`);
+            //console.log(`Filtered down to ${filteredMemories.length} memories after removing self-denials.`);
             // --- End filtering ---
 
             // Proceed only if there are memories left after filtering
@@ -63,7 +63,7 @@ export async function buildLlamaContext(userInput: string): Promise<string> {
                         excerptsString += text + '\n'; // Add newline between excerpts
                         includedMemoryCount++;
                     } else {
-                        console.log(`DEBUG: Context length limit reached (${MAX_CONTEXT_CHARS} chars), stopping loop after ${includedMemoryCount} excerpts.`);
+                        //console.log(`DEBUG: Context length limit reached (${MAX_CONTEXT_CHARS} chars), stopping loop after ${includedMemoryCount} excerpts.`);
                         break; // Stop adding memories once limit is hit
                     }
                 }
@@ -90,7 +90,7 @@ ${excerptsString.trim()}
 --- End Instructions ---`;
 
                     contextForLlama = systemPrompt.trim();
-                    console.log("DEBUG: Built context v2 with memory excerpts:", contextForLlama); // Log the full context
+                    //console.log("DEBUG: Built context v2 with memory excerpts:", contextForLlama); // Log the full context
                 } else {
                     // No relevant memories fit or available after filtering
                     // Revised System Prompt v2 (without memories)
@@ -110,13 +110,13 @@ Goal: Have a natural, warm, and engaging conversation.
 --- End Instructions ---`;
 
                     contextForLlama = systemPrompt.trim();
-                    console.log("DEBUG: No memory excerpts included, using base persona prompt v2.");
+                    //console.log("DEBUG: No memory excerpts included, using base persona prompt v2.");
                 }
             } else {
-                console.log("DEBUG: No relevant memories remain after filtering self-denials.");
+                //console.log("DEBUG: No relevant memories remain after filtering self-denials.");
             }
         } else {
-            console.log("No relevant memories found in DB.");
+            //console.log("No relevant memories found in DB.");
 
         }
     } catch (memError) {

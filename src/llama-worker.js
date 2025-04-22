@@ -100,10 +100,10 @@ import {
   async function generate(data) {
     const { messages, audio } = data;
     // Log 
-    console.log(
-      `UltravoxWorker: Received '${audio ? 'generate_with_audio' : 'generate'}' request.`, 
-      `Messages count: ${messages.length}. Audio provided? ${!!audio}. Audio length: ${audio?.length ?? 'N/A'}`
-    );
+    // console.log(
+    //   `UltravoxWorker: Received '${audio ? 'generate_with_audio' : 'generate'}' request.`, 
+    //   `Messages count: ${messages.length}. Audio provided? ${!!audio}. Audio length: ${audio?.length ?? 'N/A'}`
+    // );
     
     // Reset any cached state to prevent conflicts
     past_key_values_cache = null;
@@ -117,10 +117,10 @@ import {
         add_generation_prompt: true,
         tokenize: false, 
       });
-      console.log("Formatted text prompt:", textPrompt);
+      //console.log("Formatted text prompt:", textPrompt);
   
 
-      console.log(`UltravoxWorker: Calling processor with text prompt and audio (is audio present? ${!!audio})`);
+      //console.log(`UltravoxWorker: Calling processor with text prompt and audio (is audio present? ${!!audio})`);
       const inputs = await processor(textPrompt, audio); 
   
       let accumulatedText = "";
@@ -160,11 +160,11 @@ import {
       const decoded = processor.batch_decode(generated_ids_sliced, {
         skip_special_tokens: true,
       });
-      console.log("Raw decoded output:", decoded[0]);
+      //console.log("Raw decoded output:", decoded[0]);
   
       // Clean the final decoded output *only once* at the end
       const finalOutput = extractAssistantResponse(decoded[0]);
-      console.log("Cleaned final output:", finalOutput);
+      //console.log("Cleaned final output:", finalOutput);
   
       // Send the final, cleaned output back to the main thread
       self.postMessage({
@@ -185,14 +185,14 @@ import {
   
   async function summarize(data) {
     const { textToSummarize } = data; 
-    console.log(`UltravoxWorker: Received 'summarize' request for user input.`);
+    //console.log(`UltravoxWorker: Received 'summarize' request for user input.`);
   
     try {
       const [processor, model] = await TextGenerationPipeline.getInstance();
       const prompt = `Summarize the core information provided by the user in the statement below into a single, concise sentence or two. Do not add any extra headers, bullet points, key points, or additional information sections.\n\nUser: ${textToSummarize}\n\nSummary:`;
-      console.log("Summarization prompt prepared for user input (no extras).");
+      //console.log("Summarization prompt prepared for user input (no extras).");
       const inputs = processor.tokenizer(prompt, { return_tensors: "pt" });
-      console.log("Inputs tokenized for summarization.");
+     // console.log("Inputs tokenized for summarization.");
   
       self.postMessage({ status: "summarization_start" });
   
@@ -216,10 +216,10 @@ import {
       const decoded = processor.batch_decode(generated_ids_sliced, {
         skip_special_tokens: true,
       });
-      console.log("Raw decoded summary output:", decoded[0]);
+      //console.log("Raw decoded summary output:", decoded[0]);
   
       const finalSummary = decoded[0]?.trim() || "";
-      console.log("Final summary:", finalSummary);
+      //console.log("Final summary:", finalSummary);
   
       if (!finalSummary) {
           console.warn("Summarization resulted in an empty string after decoding.");
@@ -232,7 +232,7 @@ import {
         summary: finalSummary,
       });
   
-      console.log("Summarization completed successfully");
+      //console.log("Summarization completed successfully");
   
     } catch (error) {
       console.error("Summarization error:", error);
@@ -295,7 +295,7 @@ import {
   // Listen for messages from the main thread
   self.addEventListener("message", async (e) => {
     const { type, data } = e.data;
-    console.log("Worker received message:", type);
+    //console.log("Worker received message:", type);
   
     switch (type) {
       case "check":

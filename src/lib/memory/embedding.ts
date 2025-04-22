@@ -26,6 +26,7 @@ async function getInstance(progress_callback?: ProgressCallback): Promise<Featur
               console.log("Loading embedding model...");
               const pipelineInstance = await pipeline(TASK, MODEL_ID, {
                   progress_callback,
+                  dtype: 'q8'
               });
               instance = pipelineInstance as FeatureExtractionPipeline;
               console.log("Embedding model loaded successfully.");

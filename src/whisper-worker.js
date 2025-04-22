@@ -88,11 +88,6 @@ async function load() {
       data: 'Compiling shaders and warming up model...'
   });
 
-  // Run model with dummy input to compile shaders
-  await model.generate({
-      input_features: full([1, 80, 3000], 0.0),
-      max_new_tokens: 1,
-  });
   self.postMessage({ status: 'ready' });
 }
 // Listen for messages from the main thread

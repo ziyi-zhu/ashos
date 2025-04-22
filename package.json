@@ -1,5 +1,6 @@
 {
-  "name": "kokoro-web",
+  "name": "os1",
+  "homepage": "https://callbacked.github.io/os1/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +9,8 @@
     "format": "prettier --write .",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "@babycommando/entity-db": "^1.0.9",

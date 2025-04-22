@@ -413,7 +413,7 @@ export function LlamaChat() {
     }
   }, []); 
 
-  const handleSilenceSubmit = useCallback((text: string, audioData: Float32Array | null) => {
+  const handleSilenceSubmit = useCallback((_text: string, audioData: Float32Array | null) => {
     console.log("LlamaChat: Silence duration met, triggering submit.");
     console.log(`LlamaChat: Storing audio data from silence callback, length: ${audioData?.length ?? 'null'}`);
     latestAudioDataRef.current = audioData;

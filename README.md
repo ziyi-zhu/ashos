@@ -2,9 +2,11 @@
 
 This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-speech interaction. All the while trying to keep it lightweight.
 
-## Demo
+## Demo: Testing OS1's ability to remember my name
 
-(soon, it is too late at night for that right now)
+
+https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
+
 
 ## Features
 

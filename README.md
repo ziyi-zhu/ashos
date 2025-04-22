@@ -8,7 +8,7 @@ This project is an attempt to recreate some of the experience "OS1" from the mov
 
 ## Features
 
-*   **Speech-to-Speech Conversation:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model, which accepts both audio and text input. This allows for a more direct conversational flow where your voice input is processed directly by the core LLM.
+*   **Speech-to-Speech Conversation:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model, which accepts both audio and text input. This lets us do a direct conversational flow where your voice input is processed directly by the core LLM without converting speech into text (more pipelines, more latency).
 *   **Parallel Transcription (for Display/Memory):** While your voice directly drives the LLM, the whisper-base model runs in parallel to transcribe your speech. This transcription is used for:
     *   Displaying your words on the screen for visual feedback.
     *   Storing the text representation of what you said to the LLM in the vector storage. 

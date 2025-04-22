@@ -2,6 +2,8 @@
 
 This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-speech interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads (which is then cached for future use).
 
+It was a tough challenge trying to get a small 1B model to work in such a usable way without it hallucinating too much, but giving it guided prompts and a memory bank helped tremedously. **Still, this model is subject to saying nonsense at times.**
+
 ## Demo: Testing OS1's ability to remember my name
 
 
@@ -76,7 +78,7 @@ The first time you load the application, the necessary AI models (~2GB) will be 
 
 ## Notes
 
-*   Ensure you have a modern browser supporting Web Workers, WebGPU (recommended), and IndexedDB.
+*   Ensure you have a modern browser supporting WebGPU like any Chromium based browser.
 *   Performance depends heavily on your machine's hardware.
 
 ## Acknowledgements

@@ -853,16 +853,14 @@ export function LlamaChat() {
                 }
               }}
             />
-            {/* --- Memory Viewer Button --- */}
             <button
-              className={`memory-button ${isMemoryViewerOpen ? 'active' : ''}`} // Add class for potential styling when open
+              className={`memory-button ${isMemoryViewerOpen ? 'active' : ''}`} 
               onClick={toggleMemoryViewer}
-              disabled={isMemoryLoading} // Disable while loading memories
-              title="View/Edit Memories"
+              disabled={isMemoryLoading} 
+              title="View Memories"
             >
               <BrainCircuit className="icon" />
             </button>
-            {/* --- End Memory Viewer Button --- */}
             <button 
               className={`mic-button ${isRecording ? 'recording' : ''}`}
               onClick={() => isRecording ? stopRecordingWhisper() : startRecordingWhisper()}
@@ -880,14 +878,12 @@ export function LlamaChat() {
             </button>
           </div>
 
-          {/* --- Memory Viewer Component --- */}
           <MemoryViewer
             isOpen={isMemoryViewerOpen}
             memories={memoryList}
             onDelete={handleDeleteMemory}
             isLoading={isMemoryLoading}
           />
-          {/* --- End Memory Viewer Component --- */}
         </>
       )}
       <div ref={messageEndRef} />

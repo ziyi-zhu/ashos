@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Textarea } from "@/components/textarea";
-import { Send, Mic, MicOff, BrainCircuit } from "lucide-react";
+import { Send, Mic, MicOff, BrainCircuit} from "lucide-react";
 import { addMemory, preloadEmbeddingModel, getAllMemories, deleteMemory, MemoryRecord } from "@/lib/memory";
 import { toast } from "sonner";
 import { buildLlamaContext } from "@/lib/contextBuilder";
@@ -692,7 +692,7 @@ export function LlamaChat() {
 
   useEffect(() => {
     const isReady = llamaStatus === "ready" && kokoroStatus === "ready" && transcriptionReady;
-    const isError = llamaStatus === "error" || kokoroStatus === "error" || recorderError;
+    const isError = llamaStatus === "error" || kokoroStatus === "error";
       
     if (isReady) {
       setLoadingProgress(100);
@@ -717,7 +717,7 @@ export function LlamaChat() {
     } else {
       setLoadingProgress(prev => (prev === 100 ? 100 : 0)); 
     }
-  }, [llamaStatus, kokoroStatus, transcriptionReady, recorderError]); 
+  }, [llamaStatus, kokoroStatus, transcriptionReady]); 
 
   useEffect(() => {
     if (inputReady && messages.length === 0 && !hasAutoSpoken.current && !isProcessingRef.current) {
@@ -860,14 +860,16 @@ export function LlamaChat() {
             >
               <BrainCircuit className="icon" />
             </button>
-            <button 
-              className={`mic-button ${isRecording ? 'recording' : ''}`}
-              onClick={() => isRecording ? stopRecordingWhisper() : startRecordingWhisper()}
-              disabled={!transcriptionReady}
-              title={isRecording ? "Stop speech input" : "Start speech input"}
-            >
-              {isRecording ? <MicOff className="icon" /> : <Mic className="icon" />}
-            </button>
+            <div className="mic-button-wrapper">
+              <button
+                className={`mic-button ${isRecording ? 'recording' : ''}`}
+                onClick={() => isRecording ? stopRecordingWhisper() : startRecordingWhisper()}
+                disabled={!transcriptionReady || !!recorderError}
+                title={recorderError ? recorderError : (isRecording ? "Stop recording" : "Start recording")}
+              >
+                {isRecording ? <MicOff className="icon" /> : <Mic className="icon" />}
+              </button>
+            </div>
             <button 
               className="send-button"
               onClick={() => handleSubmit()}

@@ -144,7 +144,10 @@ export function useWhisperRecorder({
             case 'download':
             case 'progress':
             case 'done':
-                // keep as is
+                // These are detailed loading statuses from Transformers.js
+                // We can log them or update a detailed progress state if needed.
+                // For now, just acknowledging them prevents the "Unknown status" warning.
+                 // console.log("Whisper Loading Status:", status, data); // Optional: uncomment for debugging
                 break;
             default:
                 console.warn("Unknown Whisper worker message status:", status);

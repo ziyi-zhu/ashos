@@ -408,4 +408,184 @@ body.os1-theme {
   align-items: center;
   overflow: visible;
   z-index: 1;
+}
+
+/* --- Keyframes for Item Fade-In --- */
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateY(10px); /* Start slightly lower */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* --- End Keyframes --- */
+
+/* --- Memory Viewer Styles --- */
+.memory-viewer {
+  position: fixed;
+  bottom: 90px; /* Position above the input container */
+  left: 50%;
+  /* Start slightly lower and fully transparent */
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  visibility: hidden;
+  width: 90%;
+  max-width: 500px; /* Match input container */
+  height: 35vh; /* Reduce height slightly */
+  max-height: 250px; /* Make significantly shorter */
+  /* Use a lighter background, closer to input bar */
+  background-color: rgba(255, 255, 255, 0.12); /* Lighter background */
+  backdrop-filter: blur(10px); /* Increase blur slightly */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Round all corners */
+  border-radius: 15px;
+  z-index: 9; /* Below input container (z-index 10) */
+  padding: 1rem;
+  /* box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25); */ /* Remove shadow */
+  /* Update transition to include opacity and visibility */
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out, visibility 0s linear 0.35s;
+  overflow: hidden; /* Hide scrollbar until content needs it */
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.memory-viewer.open {
+  /* Slide into final position and become opaque/visible */
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  /* Ensure visibility transition happens immediately on open */
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out, visibility 0s;
+}
+
+.memory-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Allow list to take available space */
+  overflow-y: auto; /* Enable scrolling for the list itself */
+  /* Custom scrollbar styling (optional) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.memory-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memory-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.memory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to top */
+  padding: 0.75rem 0.25rem; /* Adjust padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  /* Base styles for animation - might not be needed if keyframes handle 'from' */
+  /* opacity: 1; */ 
+  /* transform: translateY(0); */
+}
+
+/* Apply fade-in animation ONLY to the newest item */
+.memory-list .memory-item:first-child {
+  /* Apply animation only when the viewer is open to avoid initial flash */
+  animation: none; /* Default: no animation */
+}
+.memory-viewer.open .memory-list .memory-item:first-child {
+   animation: fadeInItem 0.5s ease-out forwards;
+}
+
+.memory-item:last-child {
+  border-bottom: none;
+}
+
+.memory-item-content {
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.memory-text {
+  font-size: 0.9rem;
+  margin: 0 0 0.3rem 0; /* Add spacing below text */
+  line-height: 1.4;
+  word-break: break-word; /* Prevent long words overflowing */
+}
+
+.memory-meta {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.memory-delete-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6); /* Slightly dimmer */
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-top: 0.2rem; /* Align better with top of text */
+  transition: color 0.2s, transform 0.2s;
+  flex-shrink: 0; /* Prevent button shrinking */
+}
+
+.memory-delete-button:hover {
+  color: #ff8a80; /* Reddish color on hover */
+  transform: scale(1.1);
+}
+
+.memory-loading,
+.memory-empty {
+  text-align: center;
+  padding: 2rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Styles for the new memory toggle button */
+.memory-button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem; /* Match other buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.memory-button:hover {
+  opacity: 1;
+}
+
+.memory-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.memory-button.active {
+  color: #63e2b7; /* Active color hint */
+  opacity: 1;
+}
+
+.memory-button .icon {
+  width: 20px; /* Adjust size as needed */
+  height: 20px;
+}
+
+/* Adjust input container padding slightly if needed to fit button */
+.input-container {
+  padding: 0.4rem 0.5rem; /* Adjust slightly if needed */
 } 

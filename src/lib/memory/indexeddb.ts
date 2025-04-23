@@ -113,7 +113,7 @@ export async function deleteRecord(id: number): Promise<void> {
 
   return new Promise((resolve, reject) => {
     request.onsuccess = () => {
-      console.log(`Record with ID ${id} deleted successfully.`);
+      //console.log(`Record with ID ${id} deleted successfully.`);
       resolve();
     };
     request.onerror = (event) => {

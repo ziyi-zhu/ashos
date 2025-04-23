@@ -106,6 +106,9 @@ body.os1-theme {
   animation: fade-in 1.2s ease-out forwards;
   opacity: 0;
   pointer-events: none;
+  /* Add sleek scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 @keyframes glow-idle {
@@ -163,6 +166,23 @@ body.os1-theme {
   max-height: 40px;
   min-height: 40px;
   box-shadow: none !important;
+  /* Add sleek scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Webkit scrollbar styles for textarea */
+.input-container textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.input-container textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input-container textarea::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
 .input-container input::placeholder,
@@ -175,7 +195,6 @@ body.os1-theme {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
-
 }
 
 .input-container * {
@@ -434,7 +453,8 @@ body.os1-theme {
   /* Round all corners */
   border-radius: 15px;
   z-index: 9; /* Below input container (z-index 10) */
-  padding: 1rem;
+  /* Adjust padding: top, right, bottom, left */
+  padding: 1rem 0.25rem 1rem 1rem;
   /* box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25); */ /* Remove shadow */
   /* Update transition to include opacity and visibility */
   transition: transform 0.35s ease-out, opacity 0.35s ease-out, visibility 0s linear 0.35s;
@@ -462,6 +482,9 @@ body.os1-theme {
   /* Custom scrollbar styling (optional) */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  /* Add fade mask for top/bottom edges */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
 }
 
 .memory-list::-webkit-scrollbar {
@@ -481,7 +504,8 @@ body.os1-theme {
   display: flex;
   justify-content: space-between;
   align-items: flex-start; /* Align items to top */
-  padding: 0.75rem 0.25rem; /* Adjust padding */
+  /* Adjust padding: top, right, bottom, left */
+  padding: 0.75rem 1rem 0.75rem 0.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   /* Base styles for animation - might not be needed if keyframes handle 'from' */
   /* opacity: 1; */ 
@@ -541,6 +565,21 @@ body.os1-theme {
   padding: 2rem;
   opacity: 0.7;
   font-style: italic;
+  /* Added for positioning */
+  flex-grow: 1; /* Take up remaining space */
+  display: flex;
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+  padding-top: 4rem; /* Push down from true center */
+  /* Add animation */
+  animation: none; /* Default: no animation */
+  opacity: 0; /* Start hidden for animation */
+}
+
+/* Apply fade-in only when viewer is open */
+.memory-viewer.open .memory-loading,
+.memory-viewer.open .memory-empty {
+   animation: fadeInItem 0.6s 0.2s ease-out forwards; /* Reuse fade in, add slight delay */
 }
 
 /* Styles for the new memory toggle button */

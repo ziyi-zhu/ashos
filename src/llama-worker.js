@@ -173,7 +173,7 @@ import {
         raw: decoded[0], // For debugging
       });
       
-      console.log("Generation completed successfully");
+      //console.log("Generation completed successfully");
     } catch (error) {
       console.error("Generation error:", error);
       self.postMessage({
@@ -207,7 +207,7 @@ import {
         num_beams: 1,
         return_dict_in_generate: true,
       });
-      console.log("Summarization generation complete.");
+      //console.log("Summarization generation complete.");
   
       const inputTokenLength = inputs.input_ids.dims.at(-1);
       if (!sequences || !sequences.slice) {

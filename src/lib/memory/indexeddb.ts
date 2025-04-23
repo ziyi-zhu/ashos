@@ -106,18 +106,25 @@ export async function getAllRecords(): Promise<MemoryRecord[]> {
 
 // delete a memory record from the db
 export async function deleteRecord(id: number): Promise<void> {
-  return new Promise(async (resolve, reject) => {
-    const store = await getStore('readwrite');
-    const request = store.delete(id);
+  const db = await openDB();
+  const transaction = db.transaction(STORE_NAME, 'readwrite');
+  const store = transaction.objectStore(STORE_NAME);
+  const request = store.delete(id);
 
+  return new Promise((resolve, reject) => {
     request.onsuccess = () => {
+      //console.log(`Record with ID ${id} deleted successfully.`);
       resolve();
     };
-
-    request.onerror = () => {
-      console.error('Error deleting record:', request.error);
-      reject(`Error deleting record: ${request.error}`);
+    request.onerror = (event) => {
+      console.error(`Error deleting record with ID ${id}:`, (event.target as IDBRequest).error);
+      reject((event.target as IDBRequest).error);
     };
+    transaction.oncomplete = () => {};
+    transaction.onerror = (event) => {
+       console.error(`Transaction error deleting record ID ${id}:`, (event.target as IDBTransaction).error);
+      reject((event.target as IDBTransaction).error); 
+    }
   });
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Send, Mic, MicOff} from "lucide-react";
-import { addMemory, preloadEmbeddingModel } from "@/lib/memory"; //findSimilarMemories, //MemorySearchResult 
+import { Textarea } from "@/components/textarea";
+import { Send, Mic, MicOff, BrainCircuit } from "lucide-react";
+import { addMemory, preloadEmbeddingModel, getAllMemories, deleteMemory, MemoryRecord } from "@/lib/memory";
 import { toast } from "sonner";
 import { buildLlamaContext } from "@/lib/contextBuilder";
 import type { Voices, Message, TTSRequest } from "@/types/chat";
@@ -9,6 +9,7 @@ import { OS1Animation } from "./OS1Animation";
 import { AudioVisualizer } from "./AudioVisualizer";
 import "./OS1Animation.css";
 import { useWhisperRecorder } from "@/hooks/useWhisperRecorder";
+import { MemoryViewer } from "./MemoryViewer";
 
 
 const DENIAL_PHRASES_FOR_STORAGE = [
@@ -62,6 +63,16 @@ export function LlamaChat() {
   const inputRef = useRef(input);
   const isProcessingRef = useRef(isProcessing);
 
+  // --- State for Memory Viewer ---
+  const [isMemoryViewerOpen, setIsMemoryViewerOpen] = useState(false);
+  const [memoryList, setMemoryList] = useState<MemoryRecord[]>([]);
+  const [isMemoryLoading, setIsMemoryLoading] = useState(false); // Optional: for loading state
+  // --- End Memory Viewer State ---
+
+  // --- Ref to track viewer state for callbacks ---
+  const isMemoryViewerOpenRef = useRef(isMemoryViewerOpen);
+  // --- End ref --- 
+
   useEffect(() => { inputRef.current = input; }, [input]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
   useEffect(() => { isProcessingRef.current = isProcessing; }, [isProcessing]);
@@ -70,38 +81,6 @@ export function LlamaChat() {
     document.body.classList.add('os1-theme');
     return () => { document.body.classList.remove('os1-theme'); };
   }, []);
-
-  // // --- Debug function to query memory from console ---
-  // useEffect(() => {
-  //   if (import.meta.env.DEV) { // Only run in development mode
-  //     const queryMemory = async (query: string, topK: number = 5) => {
-  //       //console.log(`Querying memory with: "${query}", topK: ${topK}`);
-  //       try {
-  //         const results: MemorySearchResult[] = await findSimilarMemories(query, topK);
-  //         console.log("Memory search results:", results);
-  //         if (results.length === 0) {
-  //           console.log("No similar memories found.");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error querying memory:", error);
-  //       }
-  //     };
-
-  //     // Attach to window object
-  //     (window as any).queryMemory = queryMemory;
-  //     console.log("Memory query function 'queryMemory(query, topK)' attached to window for debugging.");
-
-  //     // Cleanup function to remove from window when component unmounts
-  //   return () => {
-  //       if ((window as any).queryMemory === queryMemory) {
-  //         delete (window as any).queryMemory;
-  //         //console.log("Removed queryMemory function from window.");
-  //       }
-  //     };
-  //   }
-  // }, []); // Empty dependency array ensures this runs only once on mount
-
-  // --- End Debug function ---
 
   const buildContextMemo = useCallback(async (userInput: string) => {
     try {
@@ -516,22 +495,28 @@ export function LlamaChat() {
             );
 
             if (shouldSaveMemory) {
-              // --- Modify: Add length check before summarizing --- 
-              const SHORT_INPUT_WORD_THRESHOLD = 15; // Store inputs shorter than this directly
+              const SHORT_INPUT_WORD_THRESHOLD = 15;
+              const MIN_DIRECT_STORE_WORD_COUNT = 1; // Don't store <= 1 word
               const wordCount = userInput.split(/\s+/).filter(Boolean).length;
 
-              if (wordCount < SHORT_INPUT_WORD_THRESHOLD) {
+              // Store directly ONLY if between 2 and 14 words (inclusive)
+              if (wordCount > MIN_DIRECT_STORE_WORD_COUNT && wordCount < SHORT_INPUT_WORD_THRESHOLD) {
                   //console.log(`Input is short (${wordCount} words), storing directly.`);
-                  // Store the short input directly without summarization
                   addMemory(userInput, 'user')
-                    //.then(() => console.log("Short user input added to memory."))
+                    .then(() => {
+                        //console.log("Short user input added to memory.");
+                        // Refresh viewer if open using ref
+                        if (isMemoryViewerOpenRef.current) {
+                            fetchMemories(); 
+                        }
+                    })
                     .catch((memError: unknown) => { 
                         console.error("Failed to add short user input to memory:", memError);
                         toast.error("Failed to save short memory input.");
                     });
-              } else {
-                 // --- Original Summarization Logic for Longer Inputs --- 
-                 const textToSummarize = userInput; // Only use user input
+              // Summarize if 15 words or more
+              } else if (wordCount >= SHORT_INPUT_WORD_THRESHOLD) {
+                 const textToSummarize = userInput; 
                  //console.log(`Requesting summarization for user input (${wordCount} words):`, textToSummarize.substring(0, 100) + "...");
                  if (llamaWorker.current) {
                    llamaWorker.current.postMessage({
@@ -542,9 +527,9 @@ export function LlamaChat() {
                    console.error("Llama worker not available for summarization request.");
                    toast.error("Could not save memory summary: Worker unavailable.");
                  }
-                 // --- End Original Summarization Logic --- 
+              } else {
+                  //console.log(`Input too short (${wordCount} words), skipping memory storage.`);
               }
-              // --- End Modify --- 
             } else {
                //console.log("Skipping memory save due to denial phrase.");
             }
@@ -565,11 +550,15 @@ export function LlamaChat() {
         case "summary_complete":
           //console.log("Received summary:", summary);
           if (summary && typeof summary === 'string' && summary.trim()) {
-            // Use requestIdleCallback or setTimeout for non-critical background task
              const saveMemory = () => {
-                 // --- Modify: Save summary with role 'user' --- 
-                 addMemory(summary.trim(), 'user') // Save the summary with user role
-                    .then(() => console.log("User input summary added to memory.")) // Update log message
+                 addMemory(summary.trim(), 'user')
+                    .then(() => {
+                        //console.log("User input summary added to memory.");
+                        // Refresh viewer if open using ref
+                        if (isMemoryViewerOpenRef.current) {
+                            fetchMemories();
+                        }
+                    })
                     .catch((memError: unknown) => { 
                         console.error("Failed to add summary to memory:", memError);
                         toast.error("Failed to save summarized memory.");
@@ -756,7 +745,7 @@ export function LlamaChat() {
   const handleAudioChunk = useCallback((chunk: Blob) => {
     setAudioChunkQueue(prev => {
       if (prev.length >= 10) {
-        console.warn("Audio queue size limit reached, dropping oldest chunk");
+        //console.warn("Audio queue size limit reached, dropping oldest chunk");
         return [...prev.slice(1), chunk];
       }
       return [...prev, chunk];
@@ -769,6 +758,56 @@ export function LlamaChat() {
       playNextChunk();
     }
   }, [isAudioPlaying, audioChunkQueue.length, playNextChunk]);
+
+  // --- Handlers for Memory Viewer ---
+  const fetchMemories = useCallback(async () => {
+    setIsMemoryLoading(true);
+    try {
+      const memories = await getAllMemories();
+      // Sort by timestamp descending (newest first)
+      memories.sort((a, b) => b.timestamp - a.timestamp);
+      setMemoryList(memories);
+    } catch (err) {
+      console.error("Failed to fetch memories:", err);
+      toast.error("Could not load memories.");
+      setMemoryList([]); // Clear list on error
+    } finally {
+      setIsMemoryLoading(false);
+    }
+  }, []);
+
+  const toggleMemoryViewer = useCallback(async () => {
+    const opening = !isMemoryViewerOpen;
+    setIsMemoryViewerOpen(opening);
+    if (opening) {
+      // Fetch memories only when opening the viewer
+      await fetchMemories();
+    } else {
+      // Optionally clear the list when closing to save memory,
+      // or keep it cached if preferred.
+      // setMemoryList([]);
+    }
+  }, [isMemoryViewerOpen, fetchMemories]);
+
+  const handleDeleteMemory = useCallback(async (id: number) => {
+    //console.log(`Attempting to delete memory ID: ${id}`);
+    try {
+      await deleteMemory(id);
+      toast.success("Memory deleted.");
+      // Refresh the list after deletion
+      await fetchMemories();
+    } catch (err) {
+      //console.error(`Failed to delete memory ID ${id}:`, err);
+      toast.error("Could not delete memory.");
+    }
+  }, [fetchMemories]); // Depend on fetchMemories to ensure it's up-to-date
+  // --- End Memory Viewer Handlers ---
+
+  // --- Effect to keep viewer state ref updated ---
+  useEffect(() => {
+    isMemoryViewerOpenRef.current = isMemoryViewerOpen;
+  }, [isMemoryViewerOpen]);
+  // --- End effect --- 
 
   return (
     <div className="os1-container">
@@ -813,11 +852,19 @@ export function LlamaChat() {
                 }
               }}
             />
+            <button
+              className={`memory-button ${isMemoryViewerOpen ? 'active' : ''}`} 
+              onClick={toggleMemoryViewer}
+              disabled={isMemoryLoading} 
+              title="View Memories"
+            >
+              <BrainCircuit className="icon" />
+            </button>
             <button 
               className={`mic-button ${isRecording ? 'recording' : ''}`}
               onClick={() => isRecording ? stopRecordingWhisper() : startRecordingWhisper()}
               disabled={!transcriptionReady}
-              title={isRecording ? "Stop recording" : "Start recording"}
+              title={isRecording ? "Stop speech input" : "Start speech input"}
             >
               {isRecording ? <MicOff className="icon" /> : <Mic className="icon" />}
             </button>
@@ -829,6 +876,13 @@ export function LlamaChat() {
               <Send />
             </button>
           </div>
+
+          <MemoryViewer
+            isOpen={isMemoryViewerOpen}
+            memories={memoryList}
+            onDelete={handleDeleteMemory}
+            isLoading={isMemoryLoading}
+          />
         </>
       )}
       <div ref={messageEndRef} />

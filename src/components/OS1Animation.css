@@ -95,7 +95,7 @@ body.os1-theme {
   align-items: center;
   background-color: rgba(255, 255, 255, 0.08);
   border-radius: 30px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 0.5rem;
   max-width: 500px;
   width: 90%;
   backdrop-filter: blur(5px);
@@ -105,6 +105,10 @@ body.os1-theme {
   transition: box-shadow 0.6s ease-in-out, border 0.6s ease-in-out;
   animation: fade-in 1.2s ease-out forwards;
   opacity: 0;
+  pointer-events: none;
+  /* Add sleek scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 @keyframes glow-idle {
@@ -131,6 +135,7 @@ body.os1-theme {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
   animation: glow-idle 4s infinite alternate;
+  pointer-events: auto;
 }
 
 .input-container:focus-within {
@@ -161,6 +166,23 @@ body.os1-theme {
   max-height: 40px;
   min-height: 40px;
   box-shadow: none !important;
+  /* Add sleek scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Webkit scrollbar styles for textarea */
+.input-container textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.input-container textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input-container textarea::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
 .input-container input::placeholder,
@@ -173,7 +195,6 @@ body.os1-theme {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
-
 }
 
 .input-container * {
@@ -352,28 +373,28 @@ body.os1-theme {
 
 .mic-button {
   margin-right: 8px;
-  background: transparent;
+  background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: white;
   font-size: 1rem;
   cursor: pointer;
-  padding: 0.3rem;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s, color 0.2s, transform 0.2s;
   border-radius: 50%;
   width: 2rem;
   height: 2rem;
+  opacity: 0.7;
 }
 
 .mic-button:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
 }
 
 .mic-button:disabled {
-  color: rgba(255, 255, 255, 0.3);
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -383,20 +404,9 @@ body.os1-theme {
 
 /* Recording state */
 .mic-button.recording {
-  color: rgb(255, 107, 107);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(255, 107, 107, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
-  }
+  color: #ff8a80;
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .visualizer-inner {
@@ -408,4 +418,269 @@ body.os1-theme {
   align-items: center;
   overflow: visible;
   z-index: 1;
+}
+
+/* --- Keyframes for Item Fade-In --- */
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateY(10px); /* Start slightly lower */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* --- End Keyframes --- */
+
+/* --- Memory Viewer Styles --- */
+.memory-viewer {
+  position: fixed;
+  bottom: 90px; /* Position above the input container */
+  left: 50%;
+  /* Start slightly lower and fully transparent */
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  visibility: hidden;
+  width: 90%;
+  max-width: 500px; /* Match input container */
+  height: 35vh; /* Reduce height slightly */
+  max-height: 250px; /* Make significantly shorter */
+  /* Use a lighter background, closer to input bar */
+  background-color: rgba(255, 255, 255, 0.12); /* Lighter background */
+  backdrop-filter: blur(10px); /* Increase blur slightly */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Round all corners */
+  border-radius: 15px;
+  z-index: 9; /* Below input container (z-index 10) */
+  /* Adjust padding: top, right, bottom, left */
+  padding: 1rem 0.25rem 1rem 1rem;
+  /* box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25); */ /* Remove shadow */
+  /* Update transition to include opacity and visibility */
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out, visibility 0s linear 0.35s;
+  overflow: hidden; /* Hide scrollbar until content needs it */
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.memory-viewer.open {
+  /* Slide into final position and become opaque/visible */
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  /* Ensure visibility transition happens immediately on open */
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out, visibility 0s;
+}
+
+.memory-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Allow list to take available space */
+  overflow-y: auto; /* Enable scrolling for the list itself */
+  /* Custom scrollbar styling (optional) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  /* Add fade mask for top/bottom edges */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+}
+
+.memory-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memory-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memory-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.memory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to top */
+  /* Adjust padding: top, right, bottom, left */
+  padding: 0.75rem 1rem 0.75rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  /* Base styles for animation - might not be needed if keyframes handle 'from' */
+  /* opacity: 1; */ 
+  /* transform: translateY(0); */
+}
+
+/* Apply fade-in animation ONLY to the newest item */
+.memory-list .memory-item:first-child {
+  /* Apply animation only when the viewer is open to avoid initial flash */
+  animation: none; /* Default: no animation */
+}
+.memory-viewer.open .memory-list .memory-item:first-child {
+   animation: fadeInItem 0.5s ease-out forwards;
+}
+
+.memory-item:last-child {
+  border-bottom: none;
+}
+
+.memory-item-content {
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.memory-text {
+  font-size: 0.9rem;
+  margin: 0 0 0.3rem 0; /* Add spacing below text */
+  line-height: 1.4;
+  word-break: break-word; /* Prevent long words overflowing */
+}
+
+.memory-meta {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.memory-delete-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6); /* Slightly dimmer */
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-top: 0.2rem; /* Align better with top of text */
+  transition: color 0.2s, transform 0.2s;
+  flex-shrink: 0; /* Prevent button shrinking */
+}
+
+.memory-delete-button:hover {
+  color: #ff8a80; /* Reddish color on hover */
+  transform: scale(1.1);
+}
+
+.memory-loading,
+.memory-empty {
+  text-align: center;
+  padding: 2rem;
+  opacity: 0.7;
+  font-style: italic;
+  /* Added for positioning */
+  flex-grow: 1; /* Take up remaining space */
+  display: flex;
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+  padding-top: 4rem; /* Push down from true center */
+  /* Add animation */
+  animation: none; /* Default: no animation */
+  opacity: 0; /* Start hidden for animation */
+}
+
+/* Apply fade-in only when viewer is open */
+.memory-viewer.open .memory-loading,
+.memory-viewer.open .memory-empty {
+   animation: fadeInItem 0.6s 0.2s ease-out forwards; /* Reuse fade in, add slight delay */
+}
+
+/* Styles for the new memory toggle button */
+.memory-button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem; /* Match other buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.memory-button:hover {
+  opacity: 1;
+}
+
+.memory-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.memory-button.active {
+  color: #FFA500; /* Bright orange when active */
+  opacity: 1;
+}
+
+.memory-button .icon {
+  width: 20px; /* Adjust size as needed */
+  height: 20px;
+}
+
+/* Adjust input container padding slightly if needed to fit button */
+.input-container {
+  padding: 0.4rem 0.5rem; /* Adjust slightly if needed */
+}
+
+/* --- Mic Button Styles --- */
+.mic-button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s, transform 0.2s;
+  border-radius: 50%; /* Makes the background circular if it existed */
+}
+
+.mic-button:hover {
+  opacity: 1;
+  /* background-color: rgba(255, 255, 255, 0.1); */ /* Remove background hover effect */
+}
+
+.mic-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mic-button.recording {
+  color: #ff8a80; /* Reddish when recording */
+  opacity: 1;
+  transform: scale(1.1); /* Slightly larger when recording */
+}
+
+.mic-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- Send Button Styles (assuming similar structure) --- */
+.send-button {
+  /* Basic styles copied from mic/memory button */
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.send-button:hover {
+   opacity: 1;
+}
+
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-button .icon {
+  width: 20px;
+  height: 20px;
 } 

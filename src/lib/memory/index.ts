@@ -1,5 +1,5 @@
 import { generateEmbedding } from './embedding';
-import { addRecord, getAllRecords, type MemoryRecord } from './indexeddb';
+import { addRecord, getAllRecords, deleteRecord, type MemoryRecord } from './indexeddb';
 import { cosineSimilarity } from './similarity';
 
 export interface MemorySearchResult {
@@ -11,6 +11,8 @@ export interface MemorySearchResult {
     recency?: number; 
     relevance?: number; 
 }
+
+export { type MemoryRecord };
 
 // generates the embedding to be used for the memory
 export async function addMemory(text: string, role: 'user' | 'assistant'): Promise<number> {
@@ -118,6 +120,25 @@ export async function findSimilarMemories(
     } catch (error) {
         console.error("Failed to find similar memories:", error);
         throw error; 
+    }
+}
+
+
+export async function getAllMemories(): Promise<MemoryRecord[]> {
+    try {
+        return await getAllRecords();
+    } catch (error) {
+        console.error("Failed to get all memories:", error);
+        throw error; // Re-throw or return empty array depending on desired behavior
+    }
+}
+
+export async function deleteMemory(id: number): Promise<void> {
+    try {
+        await deleteRecord(id);
+    } catch (error) {
+        console.error(`Failed to delete memory with ID ${id}:`, error);
+        throw error; // Re-throw
     }
 }
 

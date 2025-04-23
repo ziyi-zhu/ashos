@@ -495,10 +495,12 @@ export function LlamaChat() {
             );
 
             if (shouldSaveMemory) {
-              const SHORT_INPUT_WORD_THRESHOLD = 15; 
+              const SHORT_INPUT_WORD_THRESHOLD = 15;
+              const MIN_DIRECT_STORE_WORD_COUNT = 1; // Don't store <= 1 word
               const wordCount = userInput.split(/\s+/).filter(Boolean).length;
 
-              if (wordCount < SHORT_INPUT_WORD_THRESHOLD) {
+              // Store directly ONLY if between 2 and 14 words (inclusive)
+              if (wordCount > MIN_DIRECT_STORE_WORD_COUNT && wordCount < SHORT_INPUT_WORD_THRESHOLD) {
                   console.log(`Input is short (${wordCount} words), storing directly.`);
                   addMemory(userInput, 'user')
                     .then(() => {
@@ -512,7 +514,8 @@ export function LlamaChat() {
                         console.error("Failed to add short user input to memory:", memError);
                         toast.error("Failed to save short memory input.");
                     });
-              } else {
+              // Summarize if 15 words or more
+              } else if (wordCount >= SHORT_INPUT_WORD_THRESHOLD) {
                  const textToSummarize = userInput; 
                  console.log(`Requesting summarization for user input (${wordCount} words):`, textToSummarize.substring(0, 100) + "...");
                  if (llamaWorker.current) {
@@ -524,6 +527,9 @@ export function LlamaChat() {
                    console.error("Llama worker not available for summarization request.");
                    toast.error("Could not save memory summary: Worker unavailable.");
                  }
+              // Otherwise (0 or 1 word), skip storage
+              } else {
+                  console.log(`Input too short (${wordCount} words), skipping memory storage.`);
               }
             } else {
                console.log("Skipping memory save due to denial phrase.");

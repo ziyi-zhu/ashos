@@ -576,7 +576,7 @@ body.os1-theme {
 }
 
 .memory-button.active {
-  color: #63e2b7; /* Active color hint */
+  color: #FFA500; /* Bright orange when active */
   opacity: 1;
 }
 

@@ -189,8 +189,11 @@ import {
   
     try {
       const [processor, model] = await TextGenerationPipeline.getInstance();
-      const prompt = `Summarize the core information provided by the user in the statement below into a single, concise sentence or two. Do not add any extra headers, bullet points, key points, or additional information sections.\n\nUser: ${textToSummarize}\n\nSummary:`;
-      //console.log("Summarization prompt prepared for user input (no extras).");
+  
+      // third person rephrasing as a way to summarize (this actually works waaay better than I expected)
+      const prompt = `Rewrite the following User Statement from the user's perspective into a single sentence starting with "The user". Focus ONLY on the information stated by the user. Do not add external knowledge, notes,commentary, or formatting.\n\nUser Statement:\n${textToSummarize}\n\nRewritten Sentence:`;
+      //console.log("Summarization prompt prepared (third-person rephrase).");
+  
       const inputs = processor.tokenizer(prompt, { return_tensors: "pt" });
      // console.log("Inputs tokenized for summarization.");
   

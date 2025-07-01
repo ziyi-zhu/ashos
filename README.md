@@ -4,7 +4,7 @@ This project is an attempt to recreate some of the experience "OS1" from the mov
 
 It was a tough challenge trying to get a small 1B model to work in such a usable way without it hallucinating too much, but giving it guided prompts and a memory bank helped tremedously. **Still, this model is subject to saying nonsense at times and is far from perfect.**
 
-### Try it out: https://callbacked.github.io/os1/
+### Try it out: https://huggingface.co/spaces/webml-community/os1
 *(initially, you will download the required models, so loading will be a bit longer at first. Look at your browser's network tab in the console if you really want to see the models being fetched)*
 
 ## Demo: Testing OS1's ability to remember my name

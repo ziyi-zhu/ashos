@@ -1,13 +1,13 @@
-# OS1 - Local Conversational AI
+# AshOS - Local Conversational AI
 
-This project is an attempt to recreate some of the experience "OS1" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-text interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads (which is then cached for future use).
+This project is an attempt to recreate some of the experience "AshOS" from the movie 'Her', running entirely locally in your browser using transformers.js and featuring direct speech-to-text interaction. All the while trying to keep it lightweight at a whopping ~2GB of model downloads (which is then cached for future use).
 
 It was a tough challenge trying to get a small 1B model to work in such a usable way without it hallucinating too much, but giving it guided prompts and a memory bank helped tremedously. **Still, this model is subject to saying nonsense at times and is far from perfect.**
 
-### Try it out: https://huggingface.co/spaces/webml-community/os1
+### Try it out: https://huggingface.co/spaces/webml-community/ashos
 *(initially, you will download the required models, so loading will be a bit longer at first. Look at your browser's network tab in the console if you really want to see the models being fetched)*
 
-## Demo: Testing OS1's ability to remember my name
+## Demo: Testing AshOS's ability to remember my name
 
 
 https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
@@ -64,8 +64,8 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/callbacked/os1
-    cd os1 
+    git clone https://github.com/callbacked/ashos
+    cd ashos
     ```
 2.  **Install dependencies:**
     ```bash
@@ -88,7 +88,7 @@ The first time you load the application, the necessary AI models (~2GB) will be 
 
 This project is essentially an amalgamation of the hard work put in by these people orders of magnitude smarter than me, I would like to thank them in no particular order.
 
-*   **Siyoung Park:** For the original MIT Licensed OS1 loading animation concept [on CodePen](https://codepen.io/psyonline/pen/yayYWg).
+*   **Siyoung Park:** For the original MIT Licensed AshOS loading animation concept [on CodePen](https://codepen.io/psyonline/pen/yayYWg).
 
 *   **ONNX Community:** For providing the ONNX version of all of the models used here
 

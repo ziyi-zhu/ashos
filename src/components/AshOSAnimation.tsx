@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-interface OS1AnimationProps {
+interface AshOSAnimationProps {
   isTTSProcessing?: boolean;
   showTransformation?: boolean;
 }
 
-export function OS1Animation({ isTTSProcessing = false, showTransformation = false }: OS1AnimationProps) {
+export function AshOSAnimation({ isTTSProcessing = false, showTransformation = false }: AshOSAnimationProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const animationStateRef = useRef({
     toend: false,
@@ -38,7 +38,7 @@ export function OS1Animation({ isTTSProcessing = false, showTransformation = fal
     camera.position.z = 150;
     
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#d1684e');
+    scene.background = new THREE.Color('#453699');
     const group = new THREE.Group();
     scene.add(group);
     
@@ -77,7 +77,7 @@ export function OS1Animation({ isTTSProcessing = false, showTransformation = fal
     // Ring cover
     const ringcover = new THREE.Mesh(
       new THREE.PlaneGeometry(50, 15, 1),
-      new THREE.MeshBasicMaterial({ color: 0xd1684e, opacity: 0, transparent: true })
+      new THREE.MeshBasicMaterial({ color: 0x453699, opacity: 0, transparent: true })
     );
     ringcover.position.x = length + 1;
     ringcover.rotation.y = Math.PI / 2;
@@ -96,7 +96,7 @@ export function OS1Animation({ isTTSProcessing = false, showTransformation = fal
     for (let i = 0; i < 10; i++) {
       const plain = new THREE.Mesh(
         new THREE.PlaneGeometry(length * 2 + 1, radius * 3, 1),
-        new THREE.MeshBasicMaterial({ color: 0xd1684e, transparent: true, opacity: 0.13 })
+        new THREE.MeshBasicMaterial({ color: 0x453699, transparent: true, opacity: 0.13 })
       );
       plain.position.z = -2.5 + i * 0.5;
       group.add(plain);
@@ -118,7 +118,7 @@ export function OS1Animation({ isTTSProcessing = false, showTransformation = fal
     updateSize();
     window.addEventListener('resize', updateSize);
     
-    renderer.setClearColor('#d1684e');
+    renderer.setClearColor('#453699');
     
     // Add to DOM
     wrapperRef.current.innerHTML = '';

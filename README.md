@@ -15,16 +15,22 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
 
 ## Features
 
-*   **Speech-to-text Conversation:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model, which accepts both audio and text input. This lets us do a direct conversational flow where your voice input is processed directly by the core LLM without converting speech into text (more pipelines, more latency).
-*   **Parallel Transcription (for Display/Memory):** While your voice directly drives the LLM, the whisper-base model runs in parallel to transcribe your speech. This transcription is used for:
+*   **AI Model Options:** 
+    *   **OpenAI Integration (Default):** Uses OpenAI's GPT-4o-mini for fast, high-quality responses. Requires an OpenAI API key.
+    *   **Local Models:** Uses the [onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX](https://huggingface.co/onnx-community/ultravox-v0_5-llama-3_2-1b-ONNX) model for completely local operation.
+*   **Speech-to-text Conversation:** 
+    *   **With OpenAI:** Uses Whisper for transcription, then sends text to OpenAI's API
+    *   **With Local Models:** Uses the Ultravox model which accepts both audio and text input directly
+*   **Parallel Transcription (for Display/Memory):** While your voice drives the conversation, the whisper-base model runs in parallel to transcribe your speech. This transcription is used for:
     *   Displaying your words on the screen for visual feedback.
-    *   Storing the text representation of what you said to the LLM in the vector storage. 
+    *   Storing the text representation of what you said in the vector storage. 
     *   *Note: This transcription is **not** sent to the LLM for response generation.*
-    *   *(Why I did this: Even though the Ultravox Llama 3.2 1b model uses a Whisper backbone internally to process speech, there isn't a way to expose intermediate transcription within the LLM. Therefore, running Whisper separately is necessary for displaying speech feedback and adding user dialogue to vector storage.)*
 *   **Client-Side Memory:** Stores interactions between the user and assistant using vector storage in the browser's IndexedDB. Contextually relevant memories are automatically retrieved and injected into the LLM's system prompt. 
-*   **Local & Private:** All conversation data, memory storage, and AI model processing (including LLM, STT, TTS, Embeddings) happen locally on your machine. Nothing is sent to external servers.
-*   **Small Footprint:** Requires approximately 2GB of model downloads on first launch (cached for subsequent visits).
-*   **Proactive Greetings:** Welcomes users differently on their very first visit versus return visits, attempting to recall the user's name (if previously mentioned)by querying the memory bank.
+*   **Privacy Options:**
+    *   **OpenAI Mode:** Conversations are sent to OpenAI's servers for processing
+    *   **Local Mode:** All conversation data, memory storage, and AI model processing happen locally on your machine. Nothing is sent to external servers.
+*   **Small Footprint (Local Mode):** Requires approximately 2GB of model downloads on first launch (cached for subsequent visits).
+*   **Proactive Greetings:** Welcomes users differently on their very first visit versus return visits, attempting to recall the user's name (if previously mentioned) by querying the memory bank.
 
 
 ## What I used
@@ -62,6 +68,8 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
 
 ## Getting Started
 
+### Option 1: Using OpenAI (Recommended for easier setup)
+
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/callbacked/ashos
@@ -71,13 +79,42 @@ https://github.com/user-attachments/assets/525c56ec-ba87-4adf-bdcd-2e1ddf90f8b2
     ```bash
     npm i
     ```
-3.  **Run the development server:**
+3.  **Set up OpenAI API key:**
+    - Copy the `.env` file and add your OpenAI API key:
+    ```bash
+    cp .env .env.local
+    ```
+    - Edit `.env.local` and replace `your_openai_api_key_here` with your actual OpenAI API key
+    - You can get an API key from [OpenAI's platform](https://platform.openai.com/api-keys)
+4.  **Run the development server:**
     ```bash
     npm run dev
     ```
-4.  Open your browser and go to `http://localhost:5173`.
+5.  Open your browser and go to `http://localhost:5173`.
 
-The first time you load the application, the necessary AI models (~2GB) will be downloaded and cached by your browser. This might take a few moments. Subsequent loads should be faster.
+### Option 2: Using Local Models (Original setup)
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/callbacked/ashos
+    cd ashos
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm i
+    ```
+3.  **Switch to local models:**
+    - Rename `src/ash-worker.js` to `src/ash-worker.js.backup`
+    - Rename `src/llama-worker.js` to `src/llama-worker.js.backup`
+    - Rename `src/llama-worker.js.backup` to `src/llama-worker.js`
+    - Update `src/components/AshChat.tsx` to use `llama-worker.js` instead of `ash-worker.js`
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+5.  Open your browser and go to `http://localhost:5173`.
+
+The first time you load the application with local models, the necessary AI models (~2GB) will be downloaded and cached by your browser. This might take a few moments. Subsequent loads should be faster.
 
 ## Notes
 

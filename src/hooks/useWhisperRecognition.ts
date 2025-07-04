@@ -8,7 +8,7 @@ export const MAX_CHUNKS = 200; // Maximum number of audio chunks to keep to prev
 
 // silence detection
 export const SILENCE_THRESHOLD = 0.005; // RMS threshold
-export const SILENCE_DURATION_MS = 1500; // silence duration 
+export const SILENCE_DURATION_MS = 800; // silence duration - reduced for faster response
 export const RECORDING_GRACE_PERIOD_MS = 1000; // dont detect silence for the first 1 second
 
 export const convertBlobToAudio = async (blob: Blob): Promise<Float32Array | null> => {

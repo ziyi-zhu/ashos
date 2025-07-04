@@ -85,7 +85,7 @@ export function AshOSAnimation({ isTTSProcessing = false, showTransformation = f
     
     // Ring
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(4.3, 5.55, 32),
+      new THREE.RingGeometry(4.3, 5.5, 64),
       new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0, transparent: true })
     );
     ring.position.x = length + 1.1;

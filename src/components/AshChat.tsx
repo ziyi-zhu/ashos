@@ -3,7 +3,7 @@ import { Textarea } from "@/components/textarea";
 import { Send, Mic, MicOff, BrainCircuit} from "lucide-react";
 import { addMemory, preloadEmbeddingModel, getAllMemories, deleteMemory, MemoryRecord } from "@/lib/memory";
 import { toast } from "sonner";
-import { buildLlamaContext } from "@/lib/contextBuilder";
+import { buildAshContext } from "@/lib/contextBuilder";
 import type { Voices, Message, TTSRequest } from "@/types/chat";
 import { AshOSAnimation } from "./AshOSAnimation";
 import { AudioVisualizer } from "./AudioVisualizer";
@@ -25,7 +25,7 @@ const DENIAL_PHRASES_FOR_STORAGE = [
   "i don't know your name" 
 ];
 
-export function LlamaChat() {
+export function AshChat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,11 +41,11 @@ export function LlamaChat() {
   const hasAutoSpoken = useRef(false);
   const ttsStartTimeRef = useRef<number | null>(null);
   
-  const llamaWorker = useRef<Worker | null>(null);
-  const kokoroWorker = useRef<Worker | null>(null);
+  const ashWorker = useRef<Worker | null>(null);
+  const textToSpeechWorker = useRef<Worker | null>(null);
   
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [llamaStatus, setLlamaStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [ashStatus, setAshStatus] = useState<"loading" | "ready" | "error">("loading");
   const [kokoroStatus, setKokoroStatus] = useState<"loading" | "ready" | "error">("loading");
   const [componentError, setComponentError] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -63,6 +63,8 @@ export function LlamaChat() {
   const inputRef = useRef(input);
   const isProcessingRef = useRef(isProcessing);
 
+  const introSoundRef = useRef<HTMLAudioElement | null>(null);
+
   // --- State for Memory Viewer ---
   const [isMemoryViewerOpen, setIsMemoryViewerOpen] = useState(false);
   const [memoryList, setMemoryList] = useState<MemoryRecord[]>([]);
@@ -79,12 +81,26 @@ export function LlamaChat() {
 
   useEffect(() => {
     document.body.classList.add('ashos-theme');
-    return () => { document.body.classList.remove('ashos-theme'); };
+    
+    // Initialize audio refs
+    if (!introSoundRef.current) {
+      introSoundRef.current = new Audio('/chat/intro-sound.mp3');
+    }
+    
+    return () => { 
+      document.body.classList.remove('ashos-theme');
+      
+      // Cleanup audio
+      if (introSoundRef.current) {
+        introSoundRef.current.pause();
+        introSoundRef.current.currentTime = 0;
+      }
+    };
   }, []);
 
   const buildContextMemo = useCallback(async (userInput: string) => {
     try {
-      return await buildLlamaContext(userInput);
+      return await buildAshContext(userInput);
     } catch (buildError) {
       //console.error("Error building Llama context:", buildError);
       //toast.error("Failed to process memories for context.");
@@ -108,8 +124,8 @@ export function LlamaChat() {
 
   const interruptAndCleanup = useCallback(() => {
     //console.log("--- Running Interrupt and Cleanup --- ");
-    llamaWorker.current?.postMessage({ type: 'interrupt' });
-    kokoroWorker.current?.postMessage({ type: 'interrupt' });
+    ashWorker.current?.postMessage({ type: 'interrupt' });
+    textToSpeechWorker.current?.postMessage({ type: 'interrupt' });
 
     if (audioRef.current) {
       if (!audioRef.current.paused) {
@@ -142,7 +158,7 @@ export function LlamaChat() {
 
 
   const speakText = (text: string) => {
-    if (!text || !kokoroWorker.current) return;
+    if (!text || !textToSpeechWorker.current) return;
     const trimmedText = text.trim();
     if (trimmedText === "") return;
 
@@ -169,12 +185,12 @@ export function LlamaChat() {
     isProcessingTTS.current = true;
     setIsTTSProcessing(true);
     const request = ttsQueue.current[0];
-    if (kokoroWorker.current) {
+    if (textToSpeechWorker.current) {
       ttsStartTimeRef.current = performance.now();
       //console.log(`TTS Start: Sending request for text: "${request.text.substring(0, 40)}..."`);
-      kokoroWorker.current.postMessage(request);
+      textToSpeechWorker.current.postMessage(request);
     } else {
-      console.error("Kokoro worker not available when trying to process TTS queue");
+      console.error("Text-to-speech worker not available when trying to process TTS queue");
       ttsQueue.current.shift();
       isProcessingTTS.current = false;
       setIsTTSProcessing(false);
@@ -285,9 +301,9 @@ export function LlamaChat() {
 
 
           setTimeout(() => { 
-              if (llamaWorker.current) {
+              if (ashWorker.current) {
                   //console.log("Posting message type 'generate' to worker for welcome back message.");
-                  llamaWorker.current.postMessage({
+                  ashWorker.current.postMessage({
           type: 'generate',
           data: {
                           messages: messagesForWorker,
@@ -295,7 +311,7 @@ export function LlamaChat() {
                       }
                   });
       } else {
-                  console.error("Llama worker not available for welcome back message.");
+                  console.error("Ash worker not available for welcome back message.");
                   setIsProcessing(false);
                   isProcessingRef.current = false;
                   toast.error("Cannot connect to AI model worker for greeting.");
@@ -329,21 +345,24 @@ export function LlamaChat() {
         //console.log(`LlamaChat: Preparing worker message. Has audio data? ${!!audioDataForWorker}. Length: ${audioDataForWorker?.length ?? 'N/A'}`);
         latestAudioDataRef.current = null;
 
-        let contextForLlama = "";
+        let contextForAsh = "";
         try {
-            contextForLlama = await buildContextMemo(userInputText);
+            contextForAsh = await buildContextMemo(userInputText);
         } catch (buildError) {
-            console.error("Error building Llama context:", buildError);
+            console.error("Error building Ash context:", buildError);
             toast.error("Failed to process memories for context.");
-            contextForLlama = "";
+            contextForAsh = "";
         }
 
         // --- Prepare Messages --- 
         let workerMessageContent = userInputText;
+        // For OpenAI worker, always use the transcribed text instead of <|audio|> token
+        // since OpenAI doesn't support audio input directly
         if (audioDataForWorker) {
-          workerMessageContent = `<|audio|>`;
-          //console.log(`LlamaChat: Worker message content set to <|audio|> for audio input.`);
-      } else {
+          // Keep using the transcribed text for OpenAI
+          workerMessageContent = userInputText;
+          //console.log(`LlamaChat: Using transcribed text for OpenAI worker: "${userInputText.substring(0,30)}..."`);
+        } else {
           //console.log(`LlamaChat: Worker message content set to text: "${userInputText.substring(0,30)}..."`);
         }
         const userMessageForWorker: Message = { role: "user", content: workerMessageContent };
@@ -357,25 +376,25 @@ export function LlamaChat() {
         let messagesForWorker = fullHistory.slice(-SLIDING_WINDOW_SIZE);
         //console.log(`LlamaChat: Sliced message history to last ${messagesForWorker.length} messages (max ${SLIDING_WINDOW_SIZE})`);
 
-        if (contextForLlama) {
+        if (contextForAsh) {
           //console.log("Prepending system prompt with context for worker...");
-          messagesForWorker.unshift({ role: "system", content: contextForLlama });
+          messagesForWorker.unshift({ role: "system", content: contextForAsh });
         }
 
         setTimeout(() => {
-          if (llamaWorker.current) {
+          if (ashWorker.current) {
             const messageType = audioDataForWorker ? "generate_with_audio" : "generate";
             const messagePayload = {
               messages: messagesForWorker,
               audio: audioDataForWorker ? audioDataForWorker : null, 
             };
-            //console.log(`LlamaChat: Posting message type '${messageType}' to worker. Payload includes audio? ${!!messagePayload.audio}. Context included: ${!!contextForLlama}`);
-            llamaWorker.current.postMessage({
+            //console.log(`AshChat: Posting message type '${messageType}' to worker. Payload includes audio? ${!!messagePayload.audio}. Context included: ${!!contextForAsh}`);
+            ashWorker.current.postMessage({
               type: messageType,
               data: messagePayload
       });
             } else {
-            console.error("Llama worker not available");
+            console.error("Ash worker not available");
             setIsProcessing(false); 
             isProcessingRef.current = false;
             setMessages(currentMessagesForDisplay); 
@@ -419,20 +438,29 @@ export function LlamaChat() {
       setLoadingProgress(prev => Math.min(prev + (Math.random() * 4 + 1), 90));
     }, 300);
 
-    llamaWorker.current = new Worker(new URL("../llama-worker.js", import.meta.url), { type: "module" });
-    kokoroWorker.current = new Worker(new URL("../worker.js", import.meta.url), { type: "module" });
+    ashWorker.current = new Worker(new URL("../openai-worker.js", import.meta.url), { type: "module" });
+    textToSpeechWorker.current = new Worker(new URL("../elevenlabs-worker.js", import.meta.url), { type: "module" });
 
-    const handleLlamaMessage = (e: MessageEvent) => {
+    // Pass OpenAI API key to the worker
+    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (openaiApiKey) {
+      ashWorker.current.postMessage({
+        type: "setApiKey",
+        data: { apiKey: openaiApiKey }
+      });
+    }
+
+    const handleAshMessage = (e: MessageEvent) => {
       const { status, output, data, summary, error } = e.data;
       
       switch (status) {
         case "ready":
-          setLlamaStatus("ready");
+          setAshStatus("ready");
           setLoadingProgress(prev => Math.max(prev, 60));
           break;
         case "error":
-          setLlamaStatus("error");
-          setComponentError(data || "Error loading Llama model");
+          setAshStatus("error");
+          setComponentError(data || "Error loading Ash model");
           clearInterval(loadingInterval);
           currentSentenceBufferRef.current = ""; 
           break;
@@ -518,13 +546,13 @@ export function LlamaChat() {
               } else if (wordCount >= SHORT_INPUT_WORD_THRESHOLD) {
                  const textToSummarize = userInput; 
                  //console.log(`Requesting summarization for user input (${wordCount} words):`, textToSummarize.substring(0, 100) + "...");
-                 if (llamaWorker.current) {
-                   llamaWorker.current.postMessage({
+                 if (ashWorker.current) {
+                   ashWorker.current.postMessage({
                      type: 'summarize',
                      data: { textToSummarize }
                    });
                  } else {
-                   console.error("Llama worker not available for summarization request.");
+                   console.error("Ash worker not available for summarization request.");
                    toast.error("Could not save memory summary: Worker unavailable.");
                  }
               } else {
@@ -648,12 +676,12 @@ export function LlamaChat() {
       }
     };
 
-    llamaWorker.current.addEventListener("message", handleLlamaMessage);
-    kokoroWorker.current.addEventListener("message", handleKokoroMessage);
+    ashWorker.current.addEventListener("message", handleAshMessage);
+    textToSpeechWorker.current.addEventListener("message", handleKokoroMessage);
 
-    console.log("Requesting model loads for Llama, Kokoro...");
-    llamaWorker.current.postMessage({ type: "load" });
-    kokoroWorker.current.postMessage({ type: "load" });
+    console.log("Requesting model loads for Ash, Kokoro...");
+    ashWorker.current.postMessage({ type: "load" });
+    textToSpeechWorker.current.postMessage({ type: "load" });
 
     console.log("Initiating preload for Embedding model...");
     preloadEmbeddingModel().catch((err: unknown) => { 
@@ -663,11 +691,11 @@ export function LlamaChat() {
     return () => {
       isLoading = false; 
       clearInterval(loadingInterval);
-      //console.log("Terminating Llama & Kokoro workers...");
-      llamaWorker.current?.terminate();
-      kokoroWorker.current?.terminate();
-      llamaWorker.current?.removeEventListener("message", handleLlamaMessage);
-      kokoroWorker.current?.removeEventListener("message", handleKokoroMessage);
+      //console.log("Terminating Ash & Kokoro workers...");
+      ashWorker.current?.terminate();
+      textToSpeechWorker.current?.terminate();
+      ashWorker.current?.removeEventListener("message", handleAshMessage);
+      textToSpeechWorker.current?.removeEventListener("message", handleKokoroMessage);
       
         if (audioRef.current) {
             audioRef.current.pause();
@@ -678,6 +706,12 @@ export function LlamaChat() {
         if (currentAudioUrlRef.current) {
             URL.revokeObjectURL(currentAudioUrlRef.current);
             currentAudioUrlRef.current = null; 
+      }
+      
+      // Cleanup audio refs
+      if (introSoundRef.current) {
+        introSoundRef.current.pause();
+        introSoundRef.current.currentTime = 0;
       }
     };
   }, []);
@@ -691,14 +725,17 @@ export function LlamaChat() {
   }, [recorderError]);
 
   useEffect(() => {
-    const isReady = llamaStatus === "ready" && kokoroStatus === "ready" && transcriptionReady;
-    const isError = llamaStatus === "error" || kokoroStatus === "error";
+    const isReady = ashStatus === "ready" && kokoroStatus === "ready" && transcriptionReady;
+    const isError = ashStatus === "error" || kokoroStatus === "error";
       
     if (isReady) {
       setLoadingProgress(100);
       setShowLoadingAnimation(true);
       const readyTimer1 = setTimeout(() => {
         setStatus("ready");
+        if (introSoundRef.current) {
+          introSoundRef.current.play().catch((err: Error) => console.error('Error playing intro sound:', err));
+        }
         const readyTimer2 = setTimeout(() => {
           setShowLoadingAnimation(false);
         }, 2500);
@@ -709,7 +746,7 @@ export function LlamaChat() {
           clearTimeout(readyTimer2);
           clearTimeout(readyTimer3);
         };
-      }, 1000);
+      }, 500);
       return () => clearTimeout(readyTimer1);
     } else if (isError) {
       setStatus("error");
@@ -717,7 +754,7 @@ export function LlamaChat() {
     } else {
       setLoadingProgress(prev => (prev === 100 ? 100 : 0)); 
     }
-  }, [llamaStatus, kokoroStatus, transcriptionReady]); 
+  }, [ashStatus, kokoroStatus, transcriptionReady]); 
 
   useEffect(() => {
     if (inputReady && messages.length === 0 && !hasAutoSpoken.current && !isProcessingRef.current) {
@@ -725,7 +762,7 @@ export function LlamaChat() {
 
       if (!visitedFlag) {
         //console.log("First visit detected, preparing predefined greeting.");
-        const greetingText = "Welcome! I'm Ash, your conversational companion. Everything we talk about, including memories of our chat, stays right here in your browser – nothing is sent to a server, and the AI runs entirely on your machine. To help me remember you next time, what should I call you? You can type your answer or click the microphone to speak.";
+        const greetingText = "Welcome! I'm Ash, your AI therapist. Everything we talk about, including memories of our chat, stays right here in your browser – nothing is sent to a server. To help me remember you next time, what should I call you? You can type your answer or click the microphone to speak.";
         localStorage.setItem('ashos_hasVisited', 'true');
         const greetingMessage: Message = { role: 'assistant', content: greetingText };
         setMessages([greetingMessage]);

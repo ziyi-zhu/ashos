@@ -1,9 +1,9 @@
-import { LlamaChat } from "./components/LlamaChat";
+import { AshChat } from "./components/AshChat";
 
 
 function App() {
   return (
-    <LlamaChat />
+          <AshChat />
   );
 }
 

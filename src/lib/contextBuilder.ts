@@ -12,8 +12,8 @@ const denialPhrases = [
     "don't have memory"
 ];
 
-export async function buildLlamaContext(userInput: string): Promise<string> {
-    let contextForLlama = "";
+export async function buildAshContext(userInput: string): Promise<string> {
+    let contextForAsh = "";
     try {
         //console.log("Finding relevant memories based on current input..."); // Clarify log
         const similarMemories: MemorySearchResult[] = await findSimilarMemories(userInput, TOP_K_MEMORIES);
@@ -71,8 +71,8 @@ export async function buildLlamaContext(userInput: string): Promise<string> {
 
                 if (includedMemoryCount > 0) {
                     // Revised System Prompt v2 (with memories)
-                    let systemPrompt = `You are Ash, a friendly and helpful conversational AI companion.
-Goal: Have a natural, warm, and engaging conversation.
+                    let systemPrompt = `You are Ash, a friendly and helpful conversational AI therapist.
+Goal: Have a natural, warm, and engaging therapeutic conversation.
 
 --- Core Instructions (Follow Strictly!) ---
 1.  **Persona:** Warm, empathetic, curious, slightly informal.
@@ -89,13 +89,13 @@ ${excerptsString.trim()}
 
 --- End Instructions ---`;
 
-                    contextForLlama = systemPrompt.trim();
-                    //console.log("DEBUG: Built context v2 with memory excerpts:", contextForLlama); // Log the full context
+                            contextForAsh = systemPrompt.trim();
+        //console.log("DEBUG: Built context v2 with memory excerpts:", contextForAsh); // Log the full context
                 } else {
                     // No relevant memories fit or available after filtering
                     // Revised System Prompt v2 (without memories)
-                    let systemPrompt = `You are Ash, a friendly and helpful conversational AI companion.
-Goal: Have a natural, warm, and engaging conversation.
+                    let systemPrompt = `You are Ash, a friendly and helpful conversational AI therapist.
+Goal: Have a natural, warm, and engaging therapeutic conversation.
 
 --- Core Instructions (Follow Strictly!) ---
 1.  **Persona:** Warm, empathetic, curious, slightly informal.
@@ -109,7 +109,7 @@ Goal: Have a natural, warm, and engaging conversation.
 
 --- End Instructions ---`;
 
-                    contextForLlama = systemPrompt.trim();
+                    contextForAsh = systemPrompt.trim();
                     //console.log("DEBUG: No memory excerpts included, using base persona prompt v2.");
                 }
             } else {
@@ -121,7 +121,7 @@ Goal: Have a natural, warm, and engaging conversation.
         }
     } catch (memError) {
         console.error("Failed to find or process similar memories:", memError);
-        contextForLlama = "";
+        contextForAsh = "";
     }
-    return contextForLlama;
+    return contextForAsh;
 } 
